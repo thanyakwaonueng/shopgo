@@ -1,0 +1,25 @@
+version: '3.6'
+
+services:
+  db:
+    image: postgres:16.3-alpine
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      TZ: Asia/Bangkok
+    ports:
+      - "5432:5432"
+    networks:
+      - backend
+
+
+volumes:
+  db_data:
+
+networks:
+  backend:
+    driver: bridge
