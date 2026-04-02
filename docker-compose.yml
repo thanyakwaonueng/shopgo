@@ -16,6 +16,18 @@ services:
     networks:
       - backend
 
+  api:
+    build: .
+    container_name: shopgo_api
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env 
+    depends_on:
+      - db
+    networks:
+      - backend
+
 
 volumes:
   db_data:
