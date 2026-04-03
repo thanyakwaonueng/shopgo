@@ -13,6 +13,8 @@ var (
     ServicePortKey = "SERVICE_PORT"
     VersionKey     = "VERSION"
 
+    DsnDomainKey     = "DSN_DOMAIN"
+
 	// Database keys 
 	DbHostKey      = "DB_HOST"
 	DbPortKey      = "DB_PORT"

@@ -4,13 +4,16 @@ import (
     "log"
     "os"
     "path/filepath"
-
+    
+    serviceauth "github.com/thanyakwaonueng/shopgo/api/service/auth"
     "github.com/thanyakwaonueng/shopgo/api"
     "github.com/thanyakwaonueng/shopgo/lib/environment"
     "github.com/thanyakwaonueng/shopgo/lib/jwt"
+    "github.com/thanyakwaonueng/shopgo/lib/database"
     "github.com/thanyakwaonueng/shopgo/lib/middleware"
     "github.com/thanyakwaonueng/shopgo/lib/logging"
-
+    
+    "github.com/go-playground/validator/v10"
     "github.com/gofiber/fiber/v2"
     "github.com/yokeTH/gofiber-scalar/scalar/v2"
 )
@@ -20,8 +23,20 @@ func main(){
     environment.New(0)
     logger := logging.New()
     logger.Slogger.Info("Starting ShopGo API...")
+    
+    // Initialize domain database connection
+    domainDsn := environment.GetString(environment.DsnDomainKey)
+    domainDb := database.New(domainDsn)
 
     jwtManager := jwt.New(logger.Slogger)
+
+    // Initialize validator
+    validate := validator.New(validator.WithRequiredStructEnabled())
+
+    // Register services
+    {
+        serviceauth.Register(domainDb, logger.Slogger, jwtManager)
+    }
 
     //Initialize Fiber app
     app := fiber.New(fiber.Config{
@@ -64,6 +79,7 @@ func main(){
     api.Register(
         app,
         logger.Slogger,
+        validate,
         jwtManager,
         mid,
     )

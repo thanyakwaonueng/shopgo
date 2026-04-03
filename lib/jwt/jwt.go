@@ -31,6 +31,7 @@ type (
 		AccessId   uuid.UUID `json:"access_id"`
 		Authorized bool      `json:"authorized"`
 		UserId     uuid.UUID `json:"user_id"`
+        Role       string    `json:"role"` 
 		TenantId   int32     `json:"tenant_id"`
 		ClientId   int32     `json:"client_id"`
 		jwt.RegisteredClaims
@@ -46,7 +47,7 @@ type (
 )
 
 type Manager interface {
-	GenerateLoginToken(userId uuid.UUID, tenantId int32, clientId int32, rememberMe bool) (LoginToken, error)
+	GenerateLoginToken(userId uuid.UUID, role string, tenantId int32, clientId int32, rememberMe bool) (LoginToken, error)
 	ExtractAccessToken(tokenStr string) (ClaimLoginAccess, error)
 	GetAccessTokenFromContext(c *fiber.Ctx) (token string, err error)
 }
@@ -75,7 +76,7 @@ func New(logger *slog.Logger) Manager {
 	}
 }
 
-func (m *manager) GenerateLoginToken(userId uuid.UUID, tenantId int32, clientId int32, rememberMe bool) (LoginToken, error) {
+func (m *manager) GenerateLoginToken(userId uuid.UUID, role string, tenantId int32, clientId int32, rememberMe bool) (LoginToken, error) {
 	now := time.Now()
 
 	if userId == uuid.Nil {
@@ -94,6 +95,7 @@ func (m *manager) GenerateLoginToken(userId uuid.UUID, tenantId int32, clientId 
 		AccessId:   uuid.New(),
 		Authorized: true,
 		UserId:     userId,
+        Role:       role,
 		TenantId:   tenantId,
 		ClientId:   clientId,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -156,7 +158,7 @@ func (m *manager) GetAccessTokenFromContext(c *fiber.Ctx) (string, error) {
 }
 
 func (m *manager) createJwt(secret string, claims jwt.Claims) (string, error) {
-	return jwt.NewWithClaims(jwt.SigningMethodHS512, claims).SignedString([]byte(secret))
+	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(secret))
 }
 
 func (m *manager) validateToken(secret string) jwt.Keyfunc {
