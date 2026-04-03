@@ -27,27 +27,22 @@ type (
 		jwt.RegisteredClaims
 	}
 
+	// Requirement: Only user_id and role
 	ClaimLoginAccess struct {
-		AccessId   uuid.UUID `json:"access_id"`
-		Authorized bool      `json:"authorized"`
-		UserId     uuid.UUID `json:"user_id"`
-        Role       string    `json:"role"` 
-		TenantId   int32     `json:"tenant_id"`
-		ClientId   int32     `json:"client_id"`
+		UserId uuid.UUID `json:"user_id"`
+		Role   string    `json:"role"`
 		jwt.RegisteredClaims
 	}
 
+	// Germini told me this: Only user_id (Refresh tokens don't usually need roles)
 	ClaimLoginRefresh struct {
-		RefreshId uuid.UUID `json:"refresh_id"`
-		UserId    uuid.UUID `json:"user_id"`
-		ClientId  int32     `json:"client_id"`
-		TenantId  int32     `json:"tenant_id"`
+		UserId uuid.UUID `json:"user_id"`
 		jwt.RegisteredClaims
 	}
 )
 
 type Manager interface {
-	GenerateLoginToken(userId uuid.UUID, role string, tenantId int32, clientId int32, rememberMe bool) (LoginToken, error)
+	GenerateLoginToken(userId uuid.UUID, role string, rememberMe bool) (LoginToken, error)
 	ExtractAccessToken(tokenStr string) (ClaimLoginAccess, error)
 	GetAccessTokenFromContext(c *fiber.Ctx) (token string, err error)
 }
@@ -76,7 +71,7 @@ func New(logger *slog.Logger) Manager {
 	}
 }
 
-func (m *manager) GenerateLoginToken(userId uuid.UUID, role string, tenantId int32, clientId int32, rememberMe bool) (LoginToken, error) {
+func (m *manager) GenerateLoginToken(userId uuid.UUID, role string, rememberMe bool) (LoginToken, error) {
 	now := time.Now()
 
 	if userId == uuid.Nil {
@@ -92,12 +87,8 @@ func (m *manager) GenerateLoginToken(userId uuid.UUID, role string, tenantId int
 
 	accessExp := now.Add(time.Minute * time.Duration(m.loginConfig.AccessExpMins))
 	accessClaims := ClaimLoginAccess{
-		AccessId:   uuid.New(),
-		Authorized: true,
 		UserId:     userId,
         Role:       role,
-		TenantId:   tenantId,
-		ClientId:   clientId,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(accessExp),
 			IssuedAt:  jwt.NewNumericDate(now),
@@ -111,10 +102,7 @@ func (m *manager) GenerateLoginToken(userId uuid.UUID, role string, tenantId int
 
 	refreshExp := now.Add(time.Minute * time.Duration(m.loginConfig.RefreshExpMins))
 	refreshClaims := ClaimLoginRefresh{
-		RefreshId: uuid.New(),
 		UserId:    userId,
-		TenantId:  tenantId,
-		ClientId:  clientId,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(refreshExp),
 			IssuedAt:  jwt.NewNumericDate(now),

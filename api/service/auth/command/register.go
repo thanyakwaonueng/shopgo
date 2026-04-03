@@ -102,14 +102,9 @@ func (r *Register) Handle(
 		}
 
 		// 4. Generate Tokens
-		const defaultTenant int32 = 1
-		const defaultClient int32 = 1
-
 		loginToken, err := r.jwtManager.GenerateLoginToken(
 			newUser.ID,
             string(newUser.Role),
-			defaultTenant,
-			defaultClient,
 			false,
 		)
 		if err != nil {
