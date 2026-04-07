@@ -34,6 +34,7 @@ func registerPublicRoutes(
     {
         groupAuth.Post("/register", handlerauth.Register(logger, validate))
         groupAuth.Post("/login", handlerauth.Login(logger, validate))
+        groupAuth.Post("/refresh", handlerauth.RefreshToken(logger))
     }
 }
 

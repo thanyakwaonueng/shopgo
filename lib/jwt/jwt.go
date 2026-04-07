@@ -45,6 +45,7 @@ type Manager interface {
 	GenerateLoginToken(userId uuid.UUID, role string, rememberMe bool) (LoginToken, error)
 	ExtractAccessToken(tokenStr string) (ClaimLoginAccess, error)
 	GetAccessTokenFromContext(c *fiber.Ctx) (token string, err error)
+    ExtractRefreshToken(tokenStr string) (ClaimLoginRefresh, error)
 }
 
 type manager struct {
@@ -121,6 +122,28 @@ func (m *manager) GenerateLoginToken(userId uuid.UUID, role string, rememberMe b
 		RefreshToken: refreshToken,
 		RtExpire:     refreshExp.Unix(),
 	}, nil
+}
+
+func (m *manager) ExtractRefreshToken(tokenStr string) (ClaimLoginRefresh, error) {
+	secret := environment.GetString(environment.LoginRefreshSecretKey)
+	if secret == "" {
+		errMsg := "refresh token secret from environment is empty"
+		m.logger.Error(errMsg)
+		return ClaimLoginRefresh{}, errors.New(errMsg)
+	}
+
+	token, err := jwt.ParseWithClaims(tokenStr, &ClaimLoginRefresh{}, m.validateToken(secret))
+	if err != nil {
+		return ClaimLoginRefresh{}, err
+	}
+
+	claims, ok := token.Claims.(*ClaimLoginRefresh)
+	if !ok {
+		err = errors.New("unknown claims type, cannot proceed")
+		return ClaimLoginRefresh{}, err
+	}
+
+	return *claims, nil
 }
 
 func (m *manager) ExtractAccessToken(tokenStr string) (ClaimLoginAccess, error) {

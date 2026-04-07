@@ -27,4 +27,12 @@ func Register(
     if err != nil {
         panic(err)
     }
+
+	// Register RefreshToken Handler
+	serviceRefreshToken := command.NewRefreshToken(logger, jwtManager, domainDb)
+	err = mediatr.RegisterRequestHandler(serviceRefreshToken)
+	if err != nil {
+		panic(err)
+	}
+
 }
