@@ -6,6 +6,7 @@ import (
     "path/filepath"
     
     serviceauth "github.com/thanyakwaonueng/shopgo/api/service/auth"
+    servicecategories "github.com/thanyakwaonueng/shopgo/api/service/categories"
     "github.com/thanyakwaonueng/shopgo/api"
     "github.com/thanyakwaonueng/shopgo/lib/environment"
     "github.com/thanyakwaonueng/shopgo/lib/jwt"
@@ -36,6 +37,7 @@ func main(){
     // Register services
     {
         serviceauth.Register(domainDb, logger.Slogger, jwtManager)
+        servicecategories.Register(domainDb, logger.Slogger)
     }
 
     //Initialize Fiber app

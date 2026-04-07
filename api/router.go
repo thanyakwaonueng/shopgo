@@ -6,6 +6,7 @@ import (
     "github.com/thanyakwaonueng/shopgo/lib/middleware"
 
     handlerauth "github.com/thanyakwaonueng/shopgo/api/handler/auth"
+    handlercategories "github.com/thanyakwaonueng/shopgo/api/handler/categories"
 
     "github.com/go-playground/validator/v10"
     "github.com/gofiber/fiber/v2"
@@ -35,6 +36,11 @@ func registerPublicRoutes(
         groupAuth.Post("/register", handlerauth.Register(logger, validate))
         groupAuth.Post("/login", handlerauth.Login(logger, validate))
         groupAuth.Post("/refresh", handlerauth.RefreshToken(logger))
+    }
+
+    groupCategories := api.Group("/categories")
+    {
+        groupCategories.Get("/", handlercategories.GetCategories(logger))
     }
 }
 
