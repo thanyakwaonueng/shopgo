@@ -2,7 +2,7 @@ package servicecategories
 
 import (
     "log/slog"
-    //"github.com/thanyakwaonueng/shopgo/api/service/categories/command" 
+    "github.com/thanyakwaonueng/shopgo/api/service/categories/command" 
     "github.com/thanyakwaonueng/shopgo/api/service/categories/query" 
 
     "github.com/mehdihadeli/go-mediatr"
@@ -19,4 +19,11 @@ func Register(
 	if err != nil {
 		panic(err)
 	}
+
+    // Register CreateCategories Handler
+    serviceCreateCategory := command.NewCreateCategoryHandler(logger, domainDb)
+    err = mediatr.RegisterRequestHandler(serviceCreateCategory)
+    if err != nil {
+        panic(err)
+    }
 }

@@ -121,10 +121,35 @@ func (f *FiberMiddleware) Authenticated() fiber.Handler {
 		}
 
 		// 3. Store user info in Context (Locals)
-		// This allows your handlers to do: c.Locals("user_id")
+		// This allows your handlers to do: c.Locals("userId")
 		c.Locals("userId", claims.UserId)
+        c.Locals("userRole", claims.Role)
 
 		// 4. Everything is good, go to the next handler!
+		return c.Next()
+	}
+}
+
+// This assume Authenticated() is called
+func (f *FiberMiddleware) AdminOnly() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// 1. Retrieve the role that Authenticated() stored in Locals
+		role, ok := c.Locals("userRole").(string)
+
+		// 2. If it's not there or it's not "admin", block it
+		// Use StatusForbidden (403) because we know who they are,
+		// but they don't have permission.
+		if !ok || role != "admin" {
+			f.logger.Warn("Unauthorized access attempt",
+				"path", c.Path(),
+				"role", role,
+			)
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+				"message": "Access denied: Admin role required",
+			})
+		}
+
+		// 3. User is an admin, let them through!
 		return c.Next()
 	}
 }

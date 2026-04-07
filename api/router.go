@@ -24,6 +24,7 @@ func Register(
 
     registerPublicRoutes(api, logger, validate)
     registerProtectedRoutes(api, logger, validate, mid)
+    registerAdminRoutes(api, logger, validate, mid)
 }
 
 func registerPublicRoutes(
@@ -54,5 +55,20 @@ func registerProtectedRoutes(
     {
         groupAuth.Use(mid.Authenticated())
         groupAuth.Get("/me", handlerauth.GetMe(logger))
+    }
+}
+
+func registerAdminRoutes(
+    api fiber.Router,
+    logger *slog.Logger,
+    validate *validator.Validate,
+    mid *middleware.FiberMiddleware,
+) {
+
+    groupCategories := api.Group("/categories")
+    {
+        groupCategories.Use(mid.Authenticated())
+        groupCategories.Use(mid.AdminOnly())
+        groupCategories.Post("/", handlercategories.CreateCategory(logger, validate))
     }
 }
