@@ -122,7 +122,7 @@ func (f *FiberMiddleware) Authenticated() fiber.Handler {
 
 		// 3. Store user info in Context (Locals)
 		// This allows your handlers to do: c.Locals("user_id")
-		c.Locals("user_id", claims.UserId)
+		c.Locals("userId", claims.UserId)
 
 		// 4. Everything is good, go to the next handler!
 		return c.Next()

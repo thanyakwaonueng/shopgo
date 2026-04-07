@@ -59,6 +59,8 @@ func (l *Login) Handle(
 
     if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+            // I think this custom error meant to be use in dev so it would be fine to verbose it
+            // but just to be safe... let just kept the ambigous error reply for now...
 			// Security Tip: Use a generic error so attackers don't know if the email exists
 			return ResultLogin{}, customerror.NewInternalErr("Invalid email or password")
 		}

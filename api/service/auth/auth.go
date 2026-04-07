@@ -3,6 +3,7 @@ package serviceauth
 import (
     "log/slog"
     "github.com/thanyakwaonueng/shopgo/api/service/auth/command" 
+    "github.com/thanyakwaonueng/shopgo/api/service/auth/query" 
     "github.com/thanyakwaonueng/shopgo/lib/jwt" 
 
     "github.com/mehdihadeli/go-mediatr"
@@ -21,7 +22,7 @@ func Register(
         panic(err)
     }
 
-    //Register Login Handler
+    // Register Login Handler
     serviceLogin := command.NewLogin(logger, jwtManager, domainDb)
     err = mediatr.RegisterRequestHandler(serviceLogin)
     if err != nil {
@@ -34,5 +35,11 @@ func Register(
 	if err != nil {
 		panic(err)
 	}
-
+    
+    // Register GetMe Handler
+    serviceGetMe := query.NewGetMeHandler(logger, domainDb) 
+    err = mediatr.RegisterRequestHandler(serviceGetMe)
+	if err != nil {
+		panic(err)
+	}
 }

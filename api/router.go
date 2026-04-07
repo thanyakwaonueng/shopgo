@@ -44,5 +44,9 @@ func registerProtectedRoutes(
     validate *validator.Validate,
     mid *middleware.FiberMiddleware,
 ) {
-    //not implement yet
+    groupAuth := api.Group("/auth")
+    {
+        groupAuth.Use(mid.Authenticated())
+        groupAuth.Get("/me", handlerauth.GetMe(logger))
+    }
 }
