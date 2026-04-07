@@ -14,9 +14,16 @@ func Register(
     logger *slog.Logger,
     jwtManager jwt.Manager,
 ) {
-    //Register New User Register Handler
+    // Register New User Register Handler
     serviceRegister := command.NewRegister(logger, jwtManager, domainDb)
     err := mediatr.RegisterRequestHandler(serviceRegister)
+    if err != nil {
+        panic(err)
+    }
+
+    //Register Login Handler
+    serviceLogin := command.NewLogin(logger, jwtManager, domainDb)
+    err = mediatr.RegisterRequestHandler(serviceLogin)
     if err != nil {
         panic(err)
     }

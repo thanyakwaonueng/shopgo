@@ -26,12 +26,10 @@ type RequestRegister struct {
     Password        string `json:"password" validate:"required"`
 }
 
-// ResultRegister matches your Postman requirements exactly
 type ResultRegister struct {
 	User            UserResponse `json:"user"`
 	AccessToken     string       `json:"access_token"`
 	RefreshToken    string       `json:"refresh_token"`
-	// Keep these for internal logic if needed, or remove if Postman doesn't want them
 	AccessTokenExp  int64        `json:"access_token_exp"`
 	RefreshTokenExp int64        `json:"refresh_token_exp"`
 }
@@ -47,7 +45,6 @@ func NewRegister(
     logger *slog.Logger,
     jwtManager jwt.Manager,
     domainDb *gorm.DB,
-    //more implement...
 ) *Register {
     return &Register{
         logger:                         logger,

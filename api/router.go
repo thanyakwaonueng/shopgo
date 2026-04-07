@@ -30,11 +30,10 @@ func registerPublicRoutes(
     logger *slog.Logger,
     validate *validator.Validate,
 ) {
-    //not implement yet
-    
     groupAuth := api.Group("/auth")
     {
         groupAuth.Post("/register", handlerauth.Register(logger, validate))
+        groupAuth.Post("/login", handlerauth.Login(logger, validate))
     }
 }
 
