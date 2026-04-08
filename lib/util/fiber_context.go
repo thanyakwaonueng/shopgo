@@ -10,7 +10,7 @@ import (
 
 type UserDataCtx struct {
 	UserId   uuid.UUID
-	Role    string
+	Role     string
 }
 
 const (

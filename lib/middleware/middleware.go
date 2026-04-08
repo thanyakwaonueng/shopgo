@@ -135,16 +135,16 @@ func (f *FiberMiddleware) Authenticated() fiber.Handler {
 
 // This assume Authenticated() is called
 func (f *FiberMiddleware) AdminOnly() fiber.Handler {
-    userData := util.GetUserDataLocal(c)
 
 	return func(c *fiber.Ctx) error {
 		// 1. Retrieve the role that Authenticated() stored in Locals
-		role, ok := userData.Role
+        userData := util.GetUserDataLocal(c)
+		role := userData.Role
 
 		// 2. If it's not there or it's not "admin", block it
 		// Use StatusForbidden (403) because we know who they are,
 		// but they don't have permission.
-		if !ok || role != "admin" {
+		if role != "admin" {
 			f.logger.Warn("Unauthorized access attempt",
 				"path", c.Path(),
 				"role", role,
