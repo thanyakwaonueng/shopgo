@@ -7,6 +7,7 @@ import (
 
     handlerauth "github.com/thanyakwaonueng/shopgo/api/handler/auth"
     handlercategories "github.com/thanyakwaonueng/shopgo/api/handler/categories"
+    handlerproducts "github.com/thanyakwaonueng/shopgo/api/handler/products"
 
     "github.com/go-playground/validator/v10"
     "github.com/gofiber/fiber/v2"
@@ -42,6 +43,11 @@ func registerPublicRoutes(
     groupCategories := api.Group("/categories")
     {
         groupCategories.Get("/", handlercategories.GetCategories(logger))
+    }
+
+    groupProducts := api.Group("/products")
+    {
+        groupProducts.Get("/", handlerproducts.GetProducts(logger, validate))
     }
 }
 
