@@ -23,17 +23,17 @@ import (
 //	@Router			/auth/me [get]
 func GetMe(logger *slog.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// 1. Extract UserId from Fiber Locals (set by JWTMiddleware)
-		// We expect the middleware to set "userId" as a uuid.UUID
-		val := c.Locals("userId")
-		userId, ok := val.(uuid.UUID)
-		if !ok {
-			customErr := customerror.NewInternalErr("Unauthorized: invalid user context")
-			logger.Error("Failed to get userId from context", "value", val)
-			return c.Status(fiber.StatusUnauthorized).JSON(customErr)
-		}
+		// Extract UserId from Fiber Locals 
+        userData := util.GetUserDataLocal(c)
 
-		// 2. Call Service via MediatR
+		val := userData.UserId
+		userId, ok := val.(uuid.UUID)
+        if !ok {
+            // This is where you return your custom error
+            return Result{}, customerror.NewInternalErr("Unauthorized: invalid user context")
+        }
+
+		// Call Service via MediatR
 		result, err := mediatr.Send[query.RequestGetMe, query.ResultGetMe](
 			c.Context(),
 			query.RequestGetMe{

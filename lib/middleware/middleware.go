@@ -12,6 +12,7 @@ import (
 
     "github.com/thanyakwaonueng/shopgo/lib/environment"
     "github.com/thanyakwaonueng/shopgo/lib/jwt"
+    "github.com/thanyakwaonueng/shopgo/lib/util"
 
 
 	"github.com/gofiber/fiber/v2"
@@ -121,9 +122,11 @@ func (f *FiberMiddleware) Authenticated() fiber.Handler {
 		}
 
 		// 3. Store user info in Context (Locals)
-		// This allows your handlers to do: c.Locals("userId")
-		c.Locals("userId", claims.UserId)
-        c.Locals("userRole", claims.Role)
+        userData := util.UserDataCtx{
+            UserId: claims.UserId,
+            Role: claims.Role,
+        }
+        util.SetUserDataLocal(c, userData)
 
 		// 4. Everything is good, go to the next handler!
 		return c.Next()
@@ -132,9 +135,11 @@ func (f *FiberMiddleware) Authenticated() fiber.Handler {
 
 // This assume Authenticated() is called
 func (f *FiberMiddleware) AdminOnly() fiber.Handler {
+    userData := util.GetUserDataLocal(c)
+
 	return func(c *fiber.Ctx) error {
 		// 1. Retrieve the role that Authenticated() stored in Locals
-		role, ok := c.Locals("userRole").(string)
+		role, ok := userData.Role
 
 		// 2. If it's not there or it's not "admin", block it
 		// Use StatusForbidden (403) because we know who they are,

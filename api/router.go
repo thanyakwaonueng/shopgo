@@ -70,5 +70,7 @@ func registerAdminRoutes(
         groupCategories.Use(mid.Authenticated())
         groupCategories.Use(mid.AdminOnly())
         groupCategories.Post("/", handlercategories.CreateCategory(logger, validate))
+        groupCategories.Put("/:id", handlercategories.UpdateCategory(logger, validate))
+        groupCategories.Delete("/:id", handlercategories.DeleteCategory(logger))
     }
 }

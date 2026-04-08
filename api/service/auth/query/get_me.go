@@ -51,7 +51,7 @@ func (h *GetMe) Handle(
         if errors.Is(err, gorm.ErrRecordNotFound) {
             return ResultGetMe{}, customerror.NewInternalErr("User profile not found")
         }
-		return ResultGetMe{}, err
+        return ResultGetMe{}, customerror.NewInternalErr("Database error")
 	}
 
 	// Map the database entity to our Result struct

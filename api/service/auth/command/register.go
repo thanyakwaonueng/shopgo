@@ -95,7 +95,7 @@ func (r *Register) Handle(
 		}
 
 		if err := tx.Create(&newUser).Error; err != nil {
-			return err
+            return customerror.NewInternalErr("Database save failed")
 		}
 
 		// 4. Generate Tokens
@@ -105,7 +105,7 @@ func (r *Register) Handle(
 			false,
 		)
 		if err != nil {
-			return err
+            return customerror.NewInternalErr("Token generation failed")
 		}
 
 		// 5. Build Result to match the nested Postman format
@@ -127,7 +127,7 @@ func (r *Register) Handle(
 
 	if err != nil {
 		r.logger.Error("Registration transaction failed", "error", err)
-		return ResultRegister{}, err
+		return ResultRegister{}, customerror.NewInternalErr("Registration failed due to a system error")
 	}
 
 	return result, nil
