@@ -48,6 +48,7 @@ func registerPublicRoutes(
     groupProducts := api.Group("/products")
     {
         groupProducts.Get("/", handlerproducts.GetProducts(logger, validate))
+        groupProducts.Get("/:id", handlerproducts.GetProductByID(logger))
     }
 }
 
@@ -78,5 +79,15 @@ func registerAdminRoutes(
         groupCategories.Post("/", handlercategories.CreateCategory(logger, validate))
         groupCategories.Put("/:id", handlercategories.UpdateCategory(logger, validate))
         groupCategories.Delete("/:id", handlercategories.DeleteCategory(logger))
+    }
+
+    groupAdminProducts := api.Group("/products")
+    {
+        groupAdminProducts.Use(mid.Authenticated())
+        groupAdminProducts.Use(mid.AdminOnly())
+
+        groupAdminProducts.Post("/", handlerproducts.CreateProduct(logger, validate))
+        groupAdminProducts.Put("/:id", handlerproducts.UpdateProduct(logger, validate))
+        groupAdminProducts.Delete("/:id", handlerproducts.DeleteProduct(logger))
     }
 }
