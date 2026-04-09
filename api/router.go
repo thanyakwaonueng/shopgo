@@ -8,6 +8,7 @@ import (
     handlerauth "github.com/thanyakwaonueng/shopgo/api/handler/auth"
     handlercategories "github.com/thanyakwaonueng/shopgo/api/handler/categories"
     handlerproducts "github.com/thanyakwaonueng/shopgo/api/handler/products"
+    handlerorders "github.com/thanyakwaonueng/shopgo/api/handler/orders"
 
     "github.com/go-playground/validator/v10"
     "github.com/gofiber/fiber/v2"
@@ -63,6 +64,17 @@ func registerProtectedRoutes(
         groupAuth.Use(mid.Authenticated())
         groupAuth.Get("/me", handlerauth.GetMe(logger))
     }
+
+    groupOrders := api.Group("/orders")
+	{
+		groupOrders.Use(mid.Authenticated())
+
+		// Customer can place, list own, view own, and cancel own pending orders
+		groupOrders.Post("/", handlerorders.CreateOrder(logger, validate))
+		groupOrders.Get("/", handlerorders.GetOrders(logger, validate))
+		groupOrders.Get("/:id", handlerorders.GetOrderByID(logger))
+		groupOrders.Post("/:id/cancel", handlerorders.CancelOrder(logger))
+	}
 }
 
 func registerAdminRoutes(
@@ -90,4 +102,14 @@ func registerAdminRoutes(
         groupAdminProducts.Put("/:id", handlerproducts.UpdateProduct(logger, validate))
         groupAdminProducts.Delete("/:id", handlerproducts.DeleteProduct(logger))
     }
+
+	groupAdminOrders := api.Group("/orders")
+	{
+		groupAdminOrders.Use(mid.Authenticated())
+		groupAdminOrders.Use(mid.AdminOnly())
+
+		// Only Admin can advance the order status
+		groupAdminOrders.Patch("/:id/status", handlerorders.UpdateOrderStatus(logger, validate))
+		groupAdminOrders.Post("/:id/cancel", handlerorders.CancelOrder(logger))
+	}
 }

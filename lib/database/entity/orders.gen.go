@@ -23,6 +23,11 @@ type Order struct {
 	Note        string      `gorm:"type:text"`
 	CreatedAt   time.Time   `gorm:"not null;default:CURRENT_TIMESTAMP;index:idx_orders_created_at,sort:desc"`
 	UpdatedAt   time.Time   `gorm:"not null;default:CURRENT_TIMESTAMP"`
+
+    // --- ADD THIS LINE BELOW ---
+	// This allows the Go compiler to recognize 'order.Items'
+	// and allows GORM to fill it when you call .Preload("Items")
+	Items       []OrderItem `gorm:"foreignKey:OrderID"`
 }
 
 type OrderItem struct {
