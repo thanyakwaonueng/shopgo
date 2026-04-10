@@ -4,14 +4,16 @@ import (
 	"context"
 	"log/slog"
 
+	repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
 	"github.com/thanyakwaonueng/shopgo/lib/database/entity"
 	"github.com/thanyakwaonueng/shopgo/lib/util/customerror"
 	"gorm.io/gorm"
 )
 
 type CreateCategory struct {
-	logger   *slog.Logger
-	domainDb *gorm.DB
+	logger       *slog.Logger
+	domainDb     *gorm.DB
+	repoCategory repogeneric.Category
 }
 
 type RequestCreateCategory struct {
@@ -28,10 +30,12 @@ type ResultCreateCategory struct {
 func NewCreateCategoryHandler(
 	logger *slog.Logger,
 	domainDb *gorm.DB,
+	repoCategory repogeneric.Category,
 ) *CreateCategory {
 	return &CreateCategory{
-		logger:   logger,
-		domainDb: domainDb,
+		logger:       logger,
+		domainDb:     domainDb,
+		repoCategory: repoCategory,
 	}
 }
 
@@ -40,24 +44,20 @@ func (h *CreateCategory) Handle(
 	request RequestCreateCategory,
 ) (ResultCreateCategory, error) {
 	// 1. Prepare the entity
-	newCategory := entity.Category{
+	newCategory := &entity.Category{
 		Name: request.Name,
 		Slug: request.Slug,
 	}
 
-	// 2. Insert into database
-	err := h.domainDb.Create(&newCategory).Error
-	if err != nil {
-		// Handle duplicate slug error (common in Postgres)
-		// Assuming you have a unique constraint on the slug column
-		h.logger.Error("Failed to create category", "error", err)
+	// 2. Insert into database using the repository
+	if err := h.repoCategory.Create(h.domainDb, newCategory); err != nil {
+		// Logged inside the repository already
 		return ResultCreateCategory{}, customerror.NewInternalErr("Could not create category. Slug might already exist.")
 	}
 
 	// 3. Map back to Result DTO
-	// Using int32 to match your data model exactly
 	result := ResultCreateCategory{
-		ID:   newCategory.ID, 
+		ID:   newCategory.ID,
 		Name: newCategory.Name,
 		Slug: newCategory.Slug,
 	}

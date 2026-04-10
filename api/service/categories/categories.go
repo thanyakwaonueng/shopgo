@@ -23,7 +23,7 @@ func Register(
 	}
 
     // Register CreateCategory Handler
-    serviceCreateCategory := command.NewCreateCategoryHandler(logger, domainDb)
+    serviceCreateCategory := command.NewCreateCategoryHandler(logger, domainDb, repoCategory)
     err = mediatr.RegisterRequestHandler(serviceCreateCategory)
     if err != nil {
         panic(err)
