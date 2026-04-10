@@ -30,7 +30,7 @@ func Register(
     }
 
     // Register UpdateCategory Handler
-    serviceUpdateCategory := command.NewUpdateCategoryHandler(logger, domainDb)
+    serviceUpdateCategory := command.NewUpdateCategoryHandler(logger, domainDb, repoCategory)
     err = mediatr.RegisterRequestHandler(serviceUpdateCategory)
     if err != nil {
         panic(err)

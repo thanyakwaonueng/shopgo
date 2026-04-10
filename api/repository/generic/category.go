@@ -9,7 +9,9 @@ import (
 
 type Category interface {
 	List(db *gorm.DB, condition map[string]interface{}, orderBy string) ([]entity.Category, error)
+	Search(db *gorm.DB, condition map[string]interface{}, orderBy string) (*entity.Category, error)
 	Create(tx *gorm.DB, category *entity.Category) error
+	Update(tx *gorm.DB, category *entity.Category) error
 }
 
 type category struct {
@@ -35,9 +37,35 @@ func (c *category) List(
 	return results, nil
 }
 
+func (c *category) Search(
+	db *gorm.DB,
+	condition map[string]interface{},
+	orderBy string,
+) (*entity.Category, error) {
+	var results []entity.Category
+	if err := db.Where(condition).Order(orderBy).Limit(1).Find(&results).Error; err != nil {
+		c.logger.Error("Cannot get category", customerror.LogErrorKey, err)
+		return nil, err
+	}
+
+	if len(results) == 0 {
+		return nil, nil
+	}
+
+	return &results[0], nil
+}
+
 func (c *category) Create(tx *gorm.DB, category *entity.Category) error {
 	if err := tx.Create(category).Error; err != nil {
 		c.logger.Error("Cannot create category", customerror.LogErrorKey, err)
+		return err
+	}
+	return nil
+}
+
+func (c *category) Update(tx *gorm.DB, category *entity.Category) error {
+	if err := tx.Model(category).Select("*").Omit("created_at").Updates(category).Error; err != nil {
+		c.logger.Error("Cannot update category", customerror.LogErrorKey, err)
 		return err
 	}
 	return nil

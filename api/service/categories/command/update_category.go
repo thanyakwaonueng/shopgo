@@ -4,14 +4,15 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/thanyakwaonueng/shopgo/lib/database/entity"
+	repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
 	"github.com/thanyakwaonueng/shopgo/lib/util/customerror"
 	"gorm.io/gorm"
 )
 
 type UpdateCategory struct {
-	logger   *slog.Logger
-	domainDb *gorm.DB
+	logger       *slog.Logger
+	domainDb     *gorm.DB
+	repoCategory repogeneric.Category
 }
 
 type RequestUpdateCategory struct {
@@ -29,10 +30,12 @@ type ResultUpdateCategory struct {
 func NewUpdateCategoryHandler(
 	logger *slog.Logger,
 	domainDb *gorm.DB,
+	repoCategory repogeneric.Category,
 ) *UpdateCategory {
 	return &UpdateCategory{
-		logger:   logger,
-		domainDb: domainDb,
+		logger:       logger,
+		domainDb:     domainDb,
+		repoCategory: repoCategory,
 	}
 }
 
@@ -40,27 +43,26 @@ func (h *UpdateCategory) Handle(
 	ctx context.Context,
 	request RequestUpdateCategory,
 ) (ResultUpdateCategory, error) {
-	// 1. Check if category exists first
-	var category entity.Category
-	err := h.domainDb.First(&category, request.ID).Error
+
+	// 1. Check if category exists first using Search
+	category, err := h.repoCategory.Search(h.domainDb, map[string]interface{}{
+		"id": request.ID,
+	}, "")
+
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return ResultUpdateCategory{}, customerror.NewInternalErr("Category not found")
-		}
-		h.logger.Error("Database error finding category", "error", err)
 		return ResultUpdateCategory{}, customerror.NewInternalErr("Database error")
+	}
+
+	if category == nil {
+		return ResultUpdateCategory{}, customerror.NewInternalErr("Category not found")
 	}
 
 	// 2. Update the entity fields
 	category.Name = request.Name
 	category.Slug = request.Slug
 
-	// 3. Save changes
-	// .Save() will perform an UPDATE because the 'category' object has a primary key (ID)
-	err = h.domainDb.Save(&category).Error
-	if err != nil {
-		h.logger.Error("Failed to update category", "error", err, "category_id", request.ID)
-		// Usually a duplicate slug error if the slug was changed to one that already exists
+	// 3. Save changes using Update repository method
+	if err := h.repoCategory.Update(h.domainDb, category); err != nil {
 		return ResultUpdateCategory{}, customerror.NewInternalErr("Could not update category. Slug might already be in use.")
 	}
 
