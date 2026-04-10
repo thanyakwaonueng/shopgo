@@ -2,9 +2,11 @@ package main
 
 import (
     "log"
+    "log/slog"
     "os"
     "path/filepath"
     
+    repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
     serviceauth "github.com/thanyakwaonueng/shopgo/api/service/auth"
     servicecategories "github.com/thanyakwaonueng/shopgo/api/service/categories"
     serviceproducts "github.com/thanyakwaonueng/shopgo/api/service/products"
@@ -36,9 +38,12 @@ func main(){
     // Initialize validator
     validate := validator.New(validator.WithRequiredStructEnabled())
 
+    // Initialize repositories
+    repo := initRepo(logger.Slogger) 
+
     // Register services
     {
-        serviceauth.Register(domainDb, logger.Slogger, jwtManager)
+        serviceauth.Register(domainDb, logger.Slogger, jwtManager, repo.user)
         servicecategories.Register(domainDb, logger.Slogger)
         serviceproducts.Register(domainDb, logger.Slogger)
         serviceorders.Register(domainDb, logger.Slogger)
@@ -94,4 +99,18 @@ func main(){
 		log.Fatal(err)
 	}
     
+}
+
+type repo struct {
+    // Generic repo
+    user                    repogeneric.User
+}
+
+func initRepo(logger *slog.Logger) repo {
+    // Init generic repo
+    var r repo
+    {
+        r.user = repogeneric.NewUser(logger)
+    }
+    return r
 }
