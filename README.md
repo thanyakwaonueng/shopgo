@@ -3,3 +3,5 @@ DISCLAIMER ==> I commit .ENV because this project was meant to be only for prese
 WARNING: by runing build_docker.sh will remove your postgresql volume(from my understanding) I do not know if the reviewer need it not to remove or not, but I contemporary need it to prevent conflict with previous build of other project.
 
 my personal note: query params for testing /products, {{base_url}}/products?page=1&limit=5, {{base_url}}/products?q=Go, {{base_url}}/products?category_id=1, {{base_url}}/products?q=Design&category_id=3&sort=price_desc, {{base_url}}/products?sort=newest, {{base_url}}/products?sort=price_asc
+
+future plan: implement repository pattern(separate business logic & data access), then as corollary I will implement for testing next(since it should be theoritically easier to swap real db with mockDb object by then), better email & password validation ? also other field, output validation perhaps if that was even necesssary(using validator validate the response).
