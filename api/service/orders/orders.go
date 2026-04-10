@@ -30,7 +30,7 @@ func Register(
 	}
 
     // Register GetOrderByID Query
-	serviceGetOrderByID := query.NewGetOrderByIDHandler(logger, domainDb)
+	serviceGetOrderByID := query.NewGetOrderByIDHandler(logger, domainDb, repoOrder)
 	err = mediatr.RegisterRequestHandler(serviceGetOrderByID)
     if err != nil {
 		panic(err)

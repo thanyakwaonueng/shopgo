@@ -12,6 +12,7 @@ type Order interface {
 	CreateItem(tx *gorm.DB, item *entity.OrderItem) error
     ListWithPagination(db *gorm.DB, condition map[string]interface{}, orderBy string, offset, limit int) ([]entity.Order, error)
 	Count(db *gorm.DB, condition map[string]interface{}) (int64, error)
+    SearchWithItems(db *gorm.DB, condition map[string]interface{}) (*entity.Order, error)
 }
 
 type order struct {
@@ -59,4 +60,17 @@ func (o *order) Count(db *gorm.DB, condition map[string]interface{}) (int64, err
 		return 0, err
 	}
 	return total, nil
+}
+
+func (o *order) SearchWithItems(db *gorm.DB, condition map[string]interface{}) (*entity.Order, error) {
+	var result entity.Order
+	// Preload("Items") automatically fetches the associated OrderItems
+	if err := db.Preload("Items").Where(condition).First(&result).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		o.logger.Error("Cannot get order with items", customerror.LogErrorKey, err)
+		return nil, err
+	}
+	return &result, nil
 }
