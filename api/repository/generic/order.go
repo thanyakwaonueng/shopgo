@@ -13,6 +13,8 @@ type Order interface {
     ListWithPagination(db *gorm.DB, condition map[string]interface{}, orderBy string, offset, limit int) ([]entity.Order, error)
 	Count(db *gorm.DB, condition map[string]interface{}) (int64, error)
     SearchWithItems(db *gorm.DB, condition map[string]interface{}) (*entity.Order, error)
+    Search(db *gorm.DB, condition map[string]interface{}, orderBy string) (*entity.Order, error)
+	Update(tx *gorm.DB, order *entity.Order) error
 }
 
 type order struct {
@@ -73,4 +75,32 @@ func (o *order) SearchWithItems(db *gorm.DB, condition map[string]interface{}) (
 		return nil, err
 	}
 	return &result, nil
+}
+
+func (o *order) Search(
+	db *gorm.DB,
+	condition map[string]interface{},
+	orderBy string,
+) (*entity.Order, error) {
+	var results []entity.Order
+	if err := db.Where(condition).Order(orderBy).Limit(1).Find(&results).Error; err != nil {
+		o.logger.Error("Cannot get order", customerror.LogErrorKey, err)
+		return nil, err
+	}
+
+	if len(results) == 0 {
+		return nil, nil
+	}
+
+	return &results[0], nil
+}
+
+func (o *order) Update(tx *gorm.DB, order *entity.Order) error {
+	// Using Select("*") and Omit("created_at") ensures we update all fields
+	// except the creation timestamp, following your Category pattern.
+	if err := tx.Model(order).Select("*").Omit("created_at").Updates(order).Error; err != nil {
+		o.logger.Error("Cannot update order", customerror.LogErrorKey, err)
+		return err
+	}
+	return nil
 }

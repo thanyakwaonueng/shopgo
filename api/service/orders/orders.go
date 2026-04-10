@@ -37,7 +37,7 @@ func Register(
 	}
 
     // Register UpdateOrderStatus Command
-	serviceUpdateStatus := command.NewUpdateOrderStatusHandler(logger, domainDb)
+	serviceUpdateStatus := command.NewUpdateOrderStatusHandler(logger, domainDb, repoOrder)
 	err = mediatr.RegisterRequestHandler(serviceUpdateStatus)
     if err != nil {
 		panic(err)

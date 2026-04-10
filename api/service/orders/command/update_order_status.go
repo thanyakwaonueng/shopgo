@@ -6,14 +6,16 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
+	repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
 	"github.com/thanyakwaonueng/shopgo/lib/database/entity"
 	"github.com/thanyakwaonueng/shopgo/lib/util/customerror"
 	"gorm.io/gorm"
 )
 
 type UpdateOrderStatus struct {
-	logger   *slog.Logger
-	domainDb *gorm.DB
+	logger    *slog.Logger
+	domainDb  *gorm.DB
+	repoOrder repogeneric.Order
 }
 
 type RequestUpdateOrderStatus struct {
@@ -29,28 +31,35 @@ type ResultUpdateOrderStatus struct {
 func NewUpdateOrderStatusHandler(
 	logger *slog.Logger,
 	domainDb *gorm.DB,
+	repoOrder repogeneric.Order,
 ) *UpdateOrderStatus {
 	return &UpdateOrderStatus{
-		logger:   logger,
-		domainDb: domainDb,
+		logger:    logger,
+		domainDb:  domainDb,
+		repoOrder: repoOrder,
 	}
 }
 
 func (h *UpdateOrderStatus) Handle(
-    ctx context.Context, 
-    request RequestUpdateOrderStatus,
+	ctx context.Context,
+	request RequestUpdateOrderStatus,
 ) (ResultUpdateOrderStatus, error) {
-	var order entity.Order
 
-	// Fetch Order
-	if err := h.domainDb.First(&order, "id = ?", request.ID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return ResultUpdateOrderStatus{}, customerror.New(6, 1, "Order not found")
-		}
+	// 1. Fetch Order using Repository
+	order, err := h.repoOrder.Search(h.domainDb, map[string]interface{}{
+		"id": request.ID,
+	}, "")
+
+	if err != nil {
 		return ResultUpdateOrderStatus{}, customerror.NewInternalErr("Database error")
 	}
 
-	// Define valid forward transitions only
+	if order == nil {
+		// Using the requirement code 6-1 from your snippet
+		return ResultUpdateOrderStatus{}, customerror.New(6, 1, "Order not found")
+	}
+
+	// 2. State Machine Logic (Business Rules)
 	validNext := map[entity.OrderStatus]entity.OrderStatus{
 		"pending":   "confirmed",
 		"confirmed": "shipped",
@@ -61,17 +70,20 @@ func (h *UpdateOrderStatus) Handle(
 
 	if !exists || string(nextStatus) != request.Status {
 		errMsg := fmt.Sprintf("cannot transition from %s to %s", order.Status, request.Status)
-		// Requirement Code 06005
+		// Requirement Code 6-5
 		return ResultUpdateOrderStatus{}, customerror.New(6, 5, errMsg)
 	}
 
+	// 3. Update the entity
 	order.Status = entity.OrderStatus(request.Status)
-	if err := h.domainDb.Save(&order).Error; err != nil {
+
+	// 4. Save using Repository
+	if err := h.repoOrder.Update(h.domainDb, order); err != nil {
 		return ResultUpdateOrderStatus{}, customerror.NewInternalErr("Failed to save status")
 	}
 
 	return ResultUpdateOrderStatus{
-        ID: order.ID, 
-        Status: string(order.Status),
-    }, nil
+		ID:     order.ID,
+		Status: string(order.Status),
+	}, nil
 }
