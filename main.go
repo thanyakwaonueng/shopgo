@@ -47,7 +47,7 @@ func main(){
         serviceauth.Register(domainDb, logger.Slogger, jwtManager, repo.user, repo.userRoleById)
         servicecategories.Register(domainDb, logger.Slogger, repo.category, repo.productExistsByCat)
         serviceproducts.Register(domainDb, logger.Slogger)
-        serviceorders.Register(domainDb, logger.Slogger)
+        serviceorders.Register(domainDb, logger.Slogger, repo.product, repo.order)
     }
 
     //Initialize Fiber app
@@ -106,6 +106,9 @@ type repo struct {
     // Generic repo
     user                    repogeneric.User
     category                repogeneric.Category
+    product                 repogeneric.Product
+    order                   repogeneric.Order
+
 
     // Custom repo
     userRoleById            repocustom.UserRoleById
@@ -118,6 +121,8 @@ func initRepo(logger *slog.Logger) repo {
     {
         r.user = repogeneric.NewUser(logger)
         r.category = repogeneric.NewCategory(logger)
+        r.product = repogeneric.NewProduct(logger)
+        r.order = repogeneric.NewOrder(logger)
     }
     // Init custom repo
     {
