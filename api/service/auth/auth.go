@@ -41,7 +41,7 @@ func Register(
 	}
     
     // Register GetMe Handler
-    serviceGetMe := query.NewGetMeHandler(logger, domainDb) 
+    serviceGetMe := query.NewGetMeHandler(logger, domainDb, repoUser) 
     err = mediatr.RegisterRequestHandler(serviceGetMe)
 	if err != nil {
 		panic(err)
