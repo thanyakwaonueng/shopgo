@@ -12,6 +12,7 @@ type Category interface {
 	Search(db *gorm.DB, condition map[string]interface{}, orderBy string) (*entity.Category, error)
 	Create(tx *gorm.DB, category *entity.Category) error
 	Update(tx *gorm.DB, category *entity.Category) error
+    Delete(tx *gorm.DB, category *entity.Category) error
 }
 
 type category struct {
@@ -66,6 +67,14 @@ func (c *category) Create(tx *gorm.DB, category *entity.Category) error {
 func (c *category) Update(tx *gorm.DB, category *entity.Category) error {
 	if err := tx.Model(category).Select("*").Omit("created_at").Updates(category).Error; err != nil {
 		c.logger.Error("Cannot update category", customerror.LogErrorKey, err)
+		return err
+	}
+	return nil
+}
+
+func (c *category) Delete(tx *gorm.DB, category *entity.Category) error {
+	if err := tx.Delete(category).Error; err != nil {
+		c.logger.Error("Cannot delete category", customerror.LogErrorKey, err)
 		return err
 	}
 	return nil

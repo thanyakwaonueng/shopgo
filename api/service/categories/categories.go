@@ -2,6 +2,7 @@ package servicecategories
 
 import (
     "log/slog"
+    repocustom "github.com/thanyakwaonueng/shopgo/api/repository/custom"
     repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
     "github.com/thanyakwaonueng/shopgo/api/service/categories/command" 
     "github.com/thanyakwaonueng/shopgo/api/service/categories/query" 
@@ -14,6 +15,7 @@ func Register(
     domainDb *gorm.DB,
     logger *slog.Logger,
     repoCategory repogeneric.Category,
+    repoProductExistsByCat repocustom.ProductExistsByCategory,
 ) {
     // Register GetCategories Handler
     serviceGetCategories := query.NewGetCategoriesHandler(logger, domainDb, repoCategory) 
@@ -37,7 +39,7 @@ func Register(
     }
 
     // Register DeleteCategory Handler
-    serviceDeleteCategory := command.NewDeleteCategoryHandler(logger, domainDb)
+    serviceDeleteCategory := command.NewDeleteCategoryHandler(logger, domainDb, repoCategory, repoProductExistsByCat)
     err = mediatr.RegisterRequestHandler(serviceDeleteCategory)
     if err != nil {
         panic(err)
