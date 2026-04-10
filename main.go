@@ -45,7 +45,7 @@ func main(){
     // Register services
     {
         serviceauth.Register(domainDb, logger.Slogger, jwtManager, repo.user, repo.userRoleById)
-        servicecategories.Register(domainDb, logger.Slogger)
+        servicecategories.Register(domainDb, logger.Slogger, repo.category)
         serviceproducts.Register(domainDb, logger.Slogger)
         serviceorders.Register(domainDb, logger.Slogger)
     }
@@ -105,6 +105,7 @@ func main(){
 type repo struct {
     // Generic repo
     user                    repogeneric.User
+    category                repogeneric.Category
 
     // Custom repo
     userRoleById            repocustom.UserRoleById
@@ -115,6 +116,7 @@ func initRepo(logger *slog.Logger) repo {
     var r repo
     {
         r.user = repogeneric.NewUser(logger)
+        r.category = repogeneric.NewCategory(logger)
     }
     // Init custom repo
     {

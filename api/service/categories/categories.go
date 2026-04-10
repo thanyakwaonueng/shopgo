@@ -2,6 +2,7 @@ package servicecategories
 
 import (
     "log/slog"
+    repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
     "github.com/thanyakwaonueng/shopgo/api/service/categories/command" 
     "github.com/thanyakwaonueng/shopgo/api/service/categories/query" 
 
@@ -12,9 +13,10 @@ import (
 func Register(
     domainDb *gorm.DB,
     logger *slog.Logger,
+    repoCategory repogeneric.Category,
 ) {
     // Register GetCategories Handler
-    serviceGetCategories := query.NewGetCategoriesHandler(logger, domainDb) 
+    serviceGetCategories := query.NewGetCategoriesHandler(logger, domainDb, repoCategory) 
     err := mediatr.RegisterRequestHandler(serviceGetCategories)
 	if err != nil {
 		panic(err)
