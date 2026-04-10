@@ -5,25 +5,25 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/thanyakwaonueng/shopgo/lib/database/entity"
+	repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
 	"github.com/thanyakwaonueng/shopgo/lib/util/customerror"
 	"gorm.io/gorm"
 )
 
 type GetOrders struct {
-	logger   *slog.Logger
-	domainDb *gorm.DB
+	logger    *slog.Logger
+	domainDb  *gorm.DB
+	repoOrder repogeneric.Order
 }
 
 type RequestGetOrders struct {
 	UserID   uuid.UUID
 	UserRole string
 	Status   string
-	Page     int // Added for pagination
-	Limit    int // Added for pagination
+	Page     int
+	Limit    int
 }
 
-// Updated to match the "Items" + "Total" structure
 type ResultGetOrders struct {
 	Items []OrderItemDTO `json:"items"`
 	Total int64          `json:"total"`
@@ -38,50 +38,52 @@ type OrderItemDTO struct {
 	CreatedAt   string    `json:"created_at"`
 }
 
-func NewGetOrdersHandler(logger *slog.Logger, domainDb *gorm.DB) *GetOrders {
+func NewGetOrdersHandler(
+	logger *slog.Logger,
+	domainDb *gorm.DB,
+	repoOrder repogeneric.Order,
+) *GetOrders {
 	return &GetOrders{
-		logger:   logger,
-		domainDb: domainDb,
+		logger:    logger,
+		domainDb:  domainDb,
+		repoOrder: repoOrder,
 	}
 }
 
 func (h *GetOrders) Handle(ctx context.Context, request RequestGetOrders) (ResultGetOrders, error) {
-	var orders []entity.Order
-	var total int64
+	// 1. Build Conditions Map
+	condition := make(map[string]interface{})
 
-	// Initialize query
-	query := h.domainDb.Model(&entity.Order{})
-
-	// 1. Apply Multi-Tenancy Logic
+	// Apply Multi-Tenancy Logic
 	if request.UserRole != "admin" {
-		query = query.Where("user_id = ?", request.UserID)
+		condition["user_id"] = request.UserID
 	}
 
-	// 2. Apply Status Filter if provided
+	// Apply Status Filter if provided
 	if request.Status != "" {
-		query = query.Where("status = ?", request.Status)
+		condition["status"] = request.Status
 	}
 
-	// 3. Count Total (Before applying Offset/Limit)
-	err := query.Count(&total).Error
+	// 2. Count Total using Repository
+	total, err := h.repoOrder.Count(h.domainDb, condition)
 	if err != nil {
-		h.logger.Error("Database error during count", "error", err)
 		return ResultGetOrders{}, customerror.NewInternalErr("Failed to retrieve order count")
 	}
 
-	// 4. Sorting & Pagination
+	// 3. Fetch Paginated List using Repository
 	offset := (request.Page - 1) * request.Limit
-	err = query.Order("created_at DESC").
-		Offset(offset).
-		Limit(request.Limit).
-		Find(&orders).Error
-
+	orders, err := h.repoOrder.ListWithPagination(
+		h.domainDb,
+		condition,
+		"created_at DESC",
+		offset,
+		request.Limit,
+	)
 	if err != nil {
-		h.logger.Error("Database error fetching orders", "error", err)
 		return ResultGetOrders{}, customerror.NewInternalErr("Failed to retrieve orders")
 	}
 
-	// 5. Map entities to Result DTOs
+	// 4. Map entities to Result DTOs
 	items := make([]OrderItemDTO, len(orders))
 	for i, o := range orders {
 		items[i] = OrderItemDTO{

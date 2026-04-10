@@ -23,7 +23,7 @@ func Register(
 	}
     
     // Register GetOrders Query
-	serviceGetOrders := query.NewGetOrdersHandler(logger, domainDb)
+	serviceGetOrders := query.NewGetOrdersHandler(logger, domainDb, repoOrder)
 	err = mediatr.RegisterRequestHandler(serviceGetOrders)
     if err != nil {
 		panic(err)
