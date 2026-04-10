@@ -6,6 +6,7 @@ import (
     "os"
     "path/filepath"
     
+    repocustom "github.com/thanyakwaonueng/shopgo/api/repository/custom"
     repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
     serviceauth "github.com/thanyakwaonueng/shopgo/api/service/auth"
     servicecategories "github.com/thanyakwaonueng/shopgo/api/service/categories"
@@ -43,7 +44,7 @@ func main(){
 
     // Register services
     {
-        serviceauth.Register(domainDb, logger.Slogger, jwtManager, repo.user)
+        serviceauth.Register(domainDb, logger.Slogger, jwtManager, repo.user, repo.userRoleById)
         servicecategories.Register(domainDb, logger.Slogger)
         serviceproducts.Register(domainDb, logger.Slogger)
         serviceorders.Register(domainDb, logger.Slogger)
@@ -104,6 +105,9 @@ func main(){
 type repo struct {
     // Generic repo
     user                    repogeneric.User
+
+    // Custom repo
+    userRoleById            repocustom.UserRoleById
 }
 
 func initRepo(logger *slog.Logger) repo {
@@ -111,6 +115,10 @@ func initRepo(logger *slog.Logger) repo {
     var r repo
     {
         r.user = repogeneric.NewUser(logger)
+    }
+    // Init custom repo
+    {
+        r.userRoleById = repocustom.NewUserRoleById(logger)
     }
     return r
 }
