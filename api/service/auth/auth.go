@@ -25,7 +25,7 @@ func Register(
     }
 
     // Register Login Handler
-    serviceLogin := command.NewLogin(logger, jwtManager, domainDb)
+    serviceLogin := command.NewLogin(logger, jwtManager, domainDb, repoUser)
     err = mediatr.RegisterRequestHandler(serviceLogin)
     if err != nil {
         panic(err)
