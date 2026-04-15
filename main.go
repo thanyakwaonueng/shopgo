@@ -46,7 +46,7 @@ func main(){
     {
         serviceauth.Register(domainDb, logger.Slogger, jwtManager, repo.user, repo.userRoleById)
         servicecategories.Register(domainDb, logger.Slogger, repo.category, repo.productExistsByCat)
-        serviceproducts.Register(domainDb, logger.Slogger)
+        serviceproducts.Register(domainDb, logger.Slogger, repo.product)
         serviceorders.Register(domainDb, logger.Slogger, repo.product, repo.order)
     }
 

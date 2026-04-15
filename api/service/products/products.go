@@ -2,6 +2,7 @@ package serviceproducts
 
 import (
 	"log/slog"
+    repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
 	"github.com/thanyakwaonueng/shopgo/api/service/products/query"
 	"github.com/thanyakwaonueng/shopgo/api/service/products/command"
 	"github.com/mehdihadeli/go-mediatr"
@@ -11,9 +12,10 @@ import (
 func Register(
 	domainDb *gorm.DB,
 	logger *slog.Logger,
+    repoProduct repogeneric.Product,
 ) {
 	// Register GetProducts Handler
-	serviceGetProducts := query.NewGetProductsHandler(logger, domainDb)
+	serviceGetProducts := query.NewGetProductsHandler(logger, domainDb, repoProduct)
 	err := mediatr.RegisterRequestHandler(serviceGetProducts)
 	if err != nil {
         panic(err)

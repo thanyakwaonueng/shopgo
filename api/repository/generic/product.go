@@ -14,6 +14,8 @@ type Product interface {
 	SearchWithLock(tx *gorm.DB, condition map[string]interface{}) (*entity.Product, error)
 	Update(tx *gorm.DB, product *entity.Product) error
     RestoreStock(tx *gorm.DB, productID uuid.UUID, quantity int32) error
+    ListWithPagination(db *gorm.DB, condition map[string]interface{}, queryStr string, queryArgs []interface{}, orderBy string, offset, limit int) ([]entity.Product, error)
+	Count(db *gorm.DB, condition map[string]interface{}, queryStr string, queryArgs []interface{}) (int64, error)
 }
 
 type product struct {
@@ -50,4 +52,44 @@ func (p *product) RestoreStock(tx *gorm.DB, productID uuid.UUID, quantity int32)
 		return err
 	}
 	return nil
+}
+
+func (p *product) ListWithPagination(
+	db *gorm.DB,
+	condition map[string]interface{},
+	queryStr string,
+	queryArgs []interface{},
+	orderBy string,
+	offset, limit int,
+) ([]entity.Product, error) {
+	var results []entity.Product
+	tx := db.Where(condition)
+	if queryStr != "" {
+		tx = tx.Where(queryStr, queryArgs...)
+	}
+
+	if err := tx.Order(orderBy).Offset(offset).Limit(limit).Find(&results).Error; err != nil {
+		p.logger.Error("Cannot list products", customerror.LogErrorKey, err)
+		return nil, err
+	}
+	return results, nil
+}
+
+func (p *product) Count(
+	db *gorm.DB,
+	condition map[string]interface{},
+	queryStr string,
+	queryArgs []interface{},
+) (int64, error) {
+	var total int64
+	tx := db.Model(&entity.Product{}).Where(condition)
+	if queryStr != "" {
+		tx = tx.Where(queryStr, queryArgs...)
+	}
+
+	if err := tx.Count(&total).Error; err != nil {
+		p.logger.Error("Cannot count products", customerror.LogErrorKey, err)
+		return 0, err
+	}
+	return total, nil
 }

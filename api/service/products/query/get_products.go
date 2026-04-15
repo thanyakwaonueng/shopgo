@@ -5,14 +5,15 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/thanyakwaonueng/shopgo/lib/database/entity"
-	"github.com/thanyakwaonueng/shopgo/lib/util/customerror" 
+	repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
+	"github.com/thanyakwaonueng/shopgo/lib/util/customerror"
 	"gorm.io/gorm"
 )
 
 type GetProducts struct {
-	logger   *slog.Logger
-	domainDb *gorm.DB
+	logger      *slog.Logger
+	domainDb    *gorm.DB
+	repoProduct repogeneric.Product
 }
 
 type RequestGetProducts struct {
@@ -37,57 +38,52 @@ type ProductItem struct {
 }
 
 func NewGetProductsHandler(
-    logger *slog.Logger, 
-    domainDb *gorm.DB,
+	logger *slog.Logger,
+	domainDb *gorm.DB,
+	repoProduct repogeneric.Product,
 ) *GetProducts {
 	return &GetProducts{
-		logger:   logger,
-		domainDb: domainDb,
+		logger:      logger,
+		domainDb:    domainDb,
+		repoProduct: repoProduct,
 	}
 }
 
-func (h *GetProducts) Handle(
-    ctx context.Context, 
-    request RequestGetProducts,
-) (ResultGetProducts, error) {
-	var products []entity.Product
-	var total int64
-
-	query := h.domainDb.Model(&entity.Product{})
-
-	// 1. Filtering Logic
-	if request.Q != "" {
-		query = query.Where("name ILIKE ?", "%"+request.Q+"%")
-	}
+func (h *GetProducts) Handle(ctx context.Context, request RequestGetProducts) (ResultGetProducts, error) {
+	// 1. Prepare filtering
+	condition := make(map[string]interface{})
 	if request.CategoryID > 0 {
-		query = query.Where("category_id = ?", request.CategoryID)
+		condition["category_id"] = request.CategoryID
 	}
 
-	// 2. Count Total 
-	err := query.Count(&total).Error
-	if err != nil {
-		h.logger.Error("Database error during count", "error", err)
-		return ResultGetProducts{}, customerror.NewInternalErr("Failed to retrieve product count")
+	var queryStr string
+	var queryArgs []interface{}
+	if request.Q != "" {
+		queryStr = "name ILIKE ?"
+		queryArgs = append(queryArgs, "%"+request.Q+"%")
 	}
 
-	// 3. Sorting Logic
+	// 2. Prepare sorting
+	orderBy := "created_at DESC"
 	switch request.Sort {
 	case "price_asc":
-		query = query.Order("price ASC")
+		orderBy = "price ASC"
 	case "price_desc":
-		query = query.Order("price DESC")
+		orderBy = "price DESC"
 	case "newest":
-		query = query.Order("created_at DESC")
-	default:
-		query = query.Order("created_at DESC")
+		orderBy = "created_at DESC"
+	}
+
+	// 3. Count Total
+	total, err := h.repoProduct.Count(h.domainDb, condition, queryStr, queryArgs)
+	if err != nil {
+		return ResultGetProducts{}, customerror.NewInternalErr("Failed to retrieve product count")
 	}
 
 	// 4. Fetch Products with Pagination
 	offset := (request.Page - 1) * request.Limit
-	err = query.Offset(offset).Limit(request.Limit).Find(&products).Error
-	
+	products, err := h.repoProduct.ListWithPagination(h.domainDb, condition, queryStr, queryArgs, orderBy, offset, request.Limit)
 	if err != nil {
-		h.logger.Error("Database error during fetch", "error", err)
 		return ResultGetProducts{}, customerror.NewInternalErr("Database error while fetching products")
 	}
 
