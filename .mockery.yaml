@@ -1,0 +1,33 @@
+with-expecter: true
+disable-version-string: true
+issue-845-fix: true
+
+packages:
+  github.com/thanyakwaonueng/shopgo/api/repository/custom:
+    interfaces:
+      ProductExistsByCategory:
+        config:
+          dir: "mocks/repository/custom/"
+          filename: "product_exists_by_category.go"
+      UserRoleById:
+        config:
+          dir: "mocks/repository/custom/"
+          filename: "user_role_by_id.go"
+  github.com/thanyakwaonueng/shopgo/api/repository/generic:
+    interfaces:
+      Category:
+        config:
+          dir: "mocks/repository/generic/"
+          filename: "category.go"
+      Order:
+        config:
+          dir: "mocks/repository/generic/"
+          filename: "order.go"
+      Product:
+        config:
+          dir: "mocks/repository/generic/"
+          filename: "product.go"
+      User:
+        config:
+          dir: "mocks/repository/generic/"
+          filename: "user.go"

@@ -1,0 +1,7 @@
+.git
+.gitignore
+*.md
+data.ms/
+db_data/
+mongo_data/
+minio_data/
