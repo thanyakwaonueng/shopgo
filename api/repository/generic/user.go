@@ -11,6 +11,8 @@ type User interface {
 	Search(db *gorm.DB, condition map[string]interface{}, orderBy string) (*entity.User, error)
 	Create(tx *gorm.DB, user *entity.User) error
 	Update(tx *gorm.DB, user *entity.User) error
+    ListWithPagination(db *gorm.DB, condition map[string]interface{}, queryStr string, queryArgs []interface{}, orderBy string, offset, limit int) ([]entity.User, error)
+	Count(db *gorm.DB, condition map[string]interface{}, queryStr string, queryArgs []interface{}) (int64, error)
 }
 
 type user struct {
@@ -55,4 +57,44 @@ func (u *user) Update(tx *gorm.DB, user *entity.User) error {
 		return err
 	}
 	return nil
+}
+
+func (u *user) ListWithPagination(
+	db *gorm.DB,
+	condition map[string]interface{},
+	queryStr string,
+	queryArgs []interface{},
+	orderBy string,
+	offset, limit int,
+) ([]entity.User, error) {
+	var results []entity.User
+	tx := db.Where(condition)
+	if queryStr != "" {
+		tx = tx.Where(queryStr, queryArgs...)
+	}
+
+	if err := tx.Order(orderBy).Offset(offset).Limit(limit).Find(&results).Error; err != nil {
+		u.logger.Error("Cannot list users", customerror.LogErrorKey, err)
+		return nil, err
+	}
+	return results, nil
+}
+
+func (u *user) Count(
+	db *gorm.DB,
+	condition map[string]interface{},
+	queryStr string,
+	queryArgs []interface{},
+) (int64, error) {
+	var total int64
+	tx := db.Model(&entity.User{}).Where(condition)
+	if queryStr != "" {
+		tx = tx.Where(queryStr, queryArgs...)
+	}
+
+	if err := tx.Count(&total).Error; err != nil {
+		u.logger.Error("Cannot count users", customerror.LogErrorKey, err)
+		return 0, err
+	}
+	return total, nil
 }

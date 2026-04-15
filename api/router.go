@@ -9,6 +9,7 @@ import (
     handlercategories "github.com/thanyakwaonueng/shopgo/api/handler/categories"
     handlerproducts "github.com/thanyakwaonueng/shopgo/api/handler/products"
     handlerorders "github.com/thanyakwaonueng/shopgo/api/handler/orders"
+    handlerusers "github.com/thanyakwaonueng/shopgo/api/handler/users"
 
     "github.com/go-playground/validator/v10"
     "github.com/gofiber/fiber/v2"
@@ -93,23 +94,33 @@ func registerAdminRoutes(
         groupCategories.Delete("/:id", handlercategories.DeleteCategory(logger))
     }
 
-    groupAdminProducts := api.Group("/products")
+    groupProducts := api.Group("/products")
     {
-        groupAdminProducts.Use(mid.Authenticated())
-        groupAdminProducts.Use(mid.AdminOnly())
+        groupProducts.Use(mid.Authenticated())
+        groupProducts.Use(mid.AdminOnly())
 
-        groupAdminProducts.Post("/", handlerproducts.CreateProduct(logger, validate))
-        groupAdminProducts.Put("/:id", handlerproducts.UpdateProduct(logger, validate))
-        groupAdminProducts.Delete("/:id", handlerproducts.DeleteProduct(logger))
+        groupProducts.Post("/", handlerproducts.CreateProduct(logger, validate))
+        groupProducts.Put("/:id", handlerproducts.UpdateProduct(logger, validate))
+        groupProducts.Delete("/:id", handlerproducts.DeleteProduct(logger))
     }
 
-	groupAdminOrders := api.Group("/orders")
+	groupOrders := api.Group("/orders")
 	{
-		groupAdminOrders.Use(mid.Authenticated())
-		groupAdminOrders.Use(mid.AdminOnly())
+		groupOrders.Use(mid.Authenticated())
+		groupOrders.Use(mid.AdminOnly())
 
 		// Only Admin can advance the order status
-		groupAdminOrders.Patch("/:id/status", handlerorders.UpdateOrderStatus(logger, validate))
-		groupAdminOrders.Post("/:id/cancel", handlerorders.CancelOrder(logger))
+		groupOrders.Patch("/:id/status", handlerorders.UpdateOrderStatus(logger, validate))
+		groupOrders.Post("/:id/cancel", handlerorders.CancelOrder(logger))
 	}
+
+    groupUsers := api.Group("/users")
+    {
+        groupUsers.Use(mid.Authenticated())
+        groupUsers.Use(mid.AdminOnly())
+
+        groupUsers.Get("/", handlerusers.GetUsers(logger, validate))
+        groupUsers.Get("/:id", handlerusers.GetUserByID(logger, validate))
+        groupUsers.Get("/:id/role", handlerusers.UpdateUserRole(logger, validate))
+    }
 }
