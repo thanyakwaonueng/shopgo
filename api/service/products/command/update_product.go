@@ -5,14 +5,16 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/thanyakwaonueng/shopgo/lib/database/entity"
+	repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
 	"github.com/thanyakwaonueng/shopgo/lib/util/customerror"
 	"gorm.io/gorm"
 )
 
 type UpdateProduct struct {
-	logger   *slog.Logger
-	domainDb *gorm.DB
+	logger       *slog.Logger
+	domainDb     *gorm.DB
+	repoProduct  repogeneric.Product
+	repoCategory repogeneric.Category
 }
 
 type RequestUpdateProduct struct {
@@ -36,10 +38,14 @@ type ResultUpdateProduct struct {
 func NewUpdateProductHandler(
 	logger *slog.Logger,
 	domainDb *gorm.DB,
+	repoProduct repogeneric.Product,
+	repoCategory repogeneric.Category,
 ) *UpdateProduct {
 	return &UpdateProduct{
-		logger:   logger,
-		domainDb: domainDb,
+		logger:       logger,
+		domainDb:     domainDb,
+		repoProduct:  repoProduct,
+		repoCategory: repoCategory,
 	}
 }
 
@@ -47,20 +53,22 @@ func (h *UpdateProduct) Handle(
 	ctx context.Context,
 	request RequestUpdateProduct,
 ) (ResultUpdateProduct, error) {
-	// 1. Check if product exists first
-	var product entity.Product
-	err := h.domainDb.First(&product, "id = ?", request.ID).Error
+	// 1. Check if product exists using Repository
+	product, err := h.repoProduct.Search(h.domainDb, map[string]interface{}{
+		"id": request.ID,
+	})
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return ResultUpdateProduct{}, customerror.NewInternalErr("Product not found")
-		}
-		h.logger.Error("Database error finding product", "error", err)
-		return ResultUpdateProduct{}, customerror.NewInternalErr("Database error")
+		return ResultUpdateProduct{}, customerror.NewInternalErr("Database error finding product")
+	}
+	if product == nil {
+		return ResultUpdateProduct{}, customerror.NewInternalErr("Product not found")
 	}
 
-	// 2. Check if the new Category exists (validation requirement)
-	var category entity.Category
-	if err := h.domainDb.First(&category, request.CategoryID).Error; err != nil {
+	// 2. Check if the new Category exists using Repository
+	category, err := h.repoCategory.Search(h.domainDb, map[string]interface{}{
+		"id": request.CategoryID,
+	}, "")
+	if err != nil || category == nil {
 		return ResultUpdateProduct{}, customerror.NewInternalErr("Target category does not exist")
 	}
 
@@ -71,22 +79,18 @@ func (h *UpdateProduct) Handle(
 	product.Stock = request.Stock
 	product.CategoryID = request.CategoryID
 
-	// 4. Save changes
-	err = h.domainDb.Save(&product).Error
-	if err != nil {
-		h.logger.Error("Failed to update product", "error", err, "product_id", request.ID)
+	// 4. Save changes using Repository
+	if err := h.repoProduct.Update(h.domainDb, product); err != nil {
 		return ResultUpdateProduct{}, customerror.NewInternalErr("Could not update product details")
 	}
 
 	// 5. Map back to Result DTO
-	result := ResultUpdateProduct{
+	return ResultUpdateProduct{
 		ID:          product.ID,
 		Name:        product.Name,
 		Description: product.Description,
 		Price:       product.Price,
 		Stock:       product.Stock,
 		CategoryID:  product.CategoryID,
-	}
-
-	return result, nil
+	}, nil
 }

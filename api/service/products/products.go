@@ -37,7 +37,7 @@ func Register(
 	}
 
     // Register UpdateProduct Command
-	serviceUpdateProduct := command.NewUpdateProductHandler(logger, domainDb)
+	serviceUpdateProduct := command.NewUpdateProductHandler(logger, domainDb, repoProduct, repoCategory)
 	err = mediatr.RegisterRequestHandler(serviceUpdateProduct)
     if err != nil {
 		panic(err)
