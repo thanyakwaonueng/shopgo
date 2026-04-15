@@ -18,6 +18,7 @@ type Product interface {
 	Count(db *gorm.DB, condition map[string]interface{}, queryStr string, queryArgs []interface{}) (int64, error)
     Search(db *gorm.DB, condition map[string]interface{}) (*entity.Product, error)
     Create(db *gorm.DB, product *entity.Product) error
+    Delete(tx *gorm.DB, product *entity.Product) error
 }
 
 type product struct {
@@ -111,6 +112,14 @@ func (p *product) Search(db *gorm.DB, condition map[string]interface{}) (*entity
 func (p *product) Create(db *gorm.DB, product *entity.Product) error {
 	if err := db.Create(product).Error; err != nil {
 		p.logger.Error("Cannot create product", customerror.LogErrorKey, err)
+		return err
+	}
+	return nil
+}
+
+func (p *product) Delete(tx *gorm.DB, product *entity.Product) error {
+	if err := tx.Delete(product).Error; err != nil {
+		p.logger.Error("Cannot delete product", customerror.LogErrorKey, err)
 		return err
 	}
 	return nil

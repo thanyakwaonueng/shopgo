@@ -44,7 +44,7 @@ func Register(
 	}
 
     // Register DeleteProduct Command
-	serviceDeleteProduct := command.NewDeleteProductHandler(logger, domainDb)
+	serviceDeleteProduct := command.NewDeleteProductHandler(logger, domainDb, repoProduct)
 	err = mediatr.RegisterRequestHandler(serviceDeleteProduct)
     if err != nil {
 		panic(err)

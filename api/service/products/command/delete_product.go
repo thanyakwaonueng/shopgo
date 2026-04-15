@@ -5,14 +5,15 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/thanyakwaonueng/shopgo/lib/database/entity"
+	repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
 	"github.com/thanyakwaonueng/shopgo/lib/util/customerror"
 	"gorm.io/gorm"
 )
 
 type DeleteProduct struct {
-	logger   *slog.Logger
-	domainDb *gorm.DB
+	logger      *slog.Logger
+	domainDb    *gorm.DB
+	repoProduct repogeneric.Product
 }
 
 type RequestDeleteProduct struct {
@@ -22,10 +23,12 @@ type RequestDeleteProduct struct {
 func NewDeleteProductHandler(
 	logger *slog.Logger,
 	domainDb *gorm.DB,
+	repoProduct repogeneric.Product,
 ) *DeleteProduct {
 	return &DeleteProduct{
-		logger:   logger,
-		domainDb: domainDb,
+		logger:      logger,
+		domainDb:    domainDb,
+		repoProduct: repoProduct,
 	}
 }
 
@@ -33,23 +36,20 @@ func (h *DeleteProduct) Handle(
 	ctx context.Context,
 	request RequestDeleteProduct,
 ) (bool, error) {
-	// Check if Product exists first (Soft delete awareness is built into .First)
-	var product entity.Product
-	if err := h.domainDb.First(&product, "id = ?", request.ID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return false, customerror.NewInternalErr("Product not found")
-		}
-		h.logger.Error("Database error finding product", "error", err)
-		return false, customerror.NewInternalErr("Database error")
+	// 1. Check if Product exists using Repository
+	product, err := h.repoProduct.Search(h.domainDb, map[string]interface{}{
+		"id": request.ID,
+	})
+	if err != nil {
+		return false, customerror.NewInternalErr("Database error finding product")
 	}
 
-	// Perform the deletion (Soft delete because entity has DeletedAt field)
-    //Why it works
-    //The h.domainDb.Delete(&product) call will perform a soft delete if, and only if, 
-    //your entity.Product struct contains the gorm.DeletedAt field.
-    //bruh I don't know this and really sceptical, definietly I'm gonna re-check
-	if err := h.domainDb.Delete(&product).Error; err != nil {
-		h.logger.Error("Failed to delete product", "error", err, "id", request.ID)
+	if product == nil {
+		return false, customerror.NewInternalErr("Product not found")
+	}
+
+	// 2. Perform the deletion using Repository
+	if err := h.repoProduct.Delete(h.domainDb, product); err != nil {
 		return false, customerror.NewInternalErr("Could not delete product")
 	}
 
