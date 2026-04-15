@@ -17,6 +17,7 @@ type Product interface {
     ListWithPagination(db *gorm.DB, condition map[string]interface{}, queryStr string, queryArgs []interface{}, orderBy string, offset, limit int) ([]entity.Product, error)
 	Count(db *gorm.DB, condition map[string]interface{}, queryStr string, queryArgs []interface{}) (int64, error)
     Search(db *gorm.DB, condition map[string]interface{}) (*entity.Product, error)
+    Create(db *gorm.DB, product *entity.Product) error
 }
 
 type product struct {
@@ -105,4 +106,12 @@ func (p *product) Search(db *gorm.DB, condition map[string]interface{}) (*entity
 		return nil, err
 	}
 	return &result, nil
+}
+
+func (p *product) Create(db *gorm.DB, product *entity.Product) error {
+	if err := db.Create(product).Error; err != nil {
+		p.logger.Error("Cannot create product", customerror.LogErrorKey, err)
+		return err
+	}
+	return nil
 }

@@ -5,14 +5,17 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
+	repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
 	"github.com/thanyakwaonueng/shopgo/lib/database/entity"
 	"github.com/thanyakwaonueng/shopgo/lib/util/customerror"
 	"gorm.io/gorm"
 )
 
 type CreateProduct struct {
-	logger   *slog.Logger
-	domainDb *gorm.DB
+	logger       *slog.Logger
+	domainDb     *gorm.DB
+	repoProduct  repogeneric.Product
+	repoCategory repogeneric.Category
 }
 
 type RequestCreateProduct struct {
@@ -35,10 +38,14 @@ type ResultCreateProduct struct {
 func NewCreateProductHandler(
 	logger *slog.Logger,
 	domainDb *gorm.DB,
+	repoProduct repogeneric.Product,
+	repoCategory repogeneric.Category,
 ) *CreateProduct {
 	return &CreateProduct{
-		logger:   logger,
-		domainDb: domainDb,
+		logger:       logger,
+		domainDb:     domainDb,
+		repoProduct:  repoProduct,
+		repoCategory: repoCategory,
 	}
 }
 
@@ -46,14 +53,17 @@ func (h *CreateProduct) Handle(
 	ctx context.Context,
 	request RequestCreateProduct,
 ) (ResultCreateProduct, error) {
-	// 1. Check if Category exists
-	var category entity.Category
-	if err := h.domainDb.First(&category, request.CategoryID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return ResultCreateProduct{}, customerror.NewInternalErr("Category does not exist")
-		}
-		h.logger.Error("Database error checking category", "error", err)
-		return ResultCreateProduct{}, customerror.NewInternalErr("Database error")
+	// 1. Check if Category exists using Category Repository
+	category, err := h.repoCategory.Search(h.domainDb, map[string]interface{}{
+		"id": request.CategoryID,
+	}, "")
+
+	if err != nil {
+		return ResultCreateProduct{}, customerror.NewInternalErr("Failed to verify category")
+	}
+
+	if category == nil {
+		return ResultCreateProduct{}, customerror.NewInternalErr("Category does not exist")
 	}
 
 	// 2. Prepare the entity
@@ -65,22 +75,18 @@ func (h *CreateProduct) Handle(
 		CategoryID:  request.CategoryID,
 	}
 
-	// 3. Insert into database
-	err := h.domainDb.Create(&newProduct).Error
-	if err != nil {
-		h.logger.Error("Failed to create product", "error", err)
+	// 3. Insert into database using Product Repository
+	if err := h.repoProduct.Create(h.domainDb, &newProduct); err != nil {
 		return ResultCreateProduct{}, customerror.NewInternalErr("Could not create product.")
 	}
 
 	// 4. Map back to Result DTO
-	result := ResultCreateProduct{
+	return ResultCreateProduct{
 		ID:          newProduct.ID,
 		Name:        newProduct.Name,
 		Description: newProduct.Description,
 		Price:       newProduct.Price,
 		Stock:       newProduct.Stock,
 		CategoryID:  newProduct.CategoryID,
-	}
-
-	return result, nil
+	}, nil
 }

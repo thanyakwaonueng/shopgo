@@ -13,6 +13,7 @@ func Register(
 	domainDb *gorm.DB,
 	logger *slog.Logger,
     repoProduct repogeneric.Product,
+    repoCategory repogeneric.Category,
 ) {
 	// Register GetProducts Handler
 	serviceGetProducts := query.NewGetProductsHandler(logger, domainDb, repoProduct)
@@ -29,7 +30,7 @@ func Register(
 	}
 
     // Register CreateProduct Command
-	serviceCreateProduct := command.NewCreateProductHandler(logger, domainDb)
+	serviceCreateProduct := command.NewCreateProductHandler(logger, domainDb, repoProduct, repoCategory)
 	err = mediatr.RegisterRequestHandler(serviceCreateProduct)
     if err != nil {
 		panic(err)
