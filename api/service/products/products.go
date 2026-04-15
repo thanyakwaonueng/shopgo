@@ -22,7 +22,7 @@ func Register(
 	}
 
     // Register GetProductByID Handler (Single Product)
-	serviceGetProductByID := query.NewGetProductByIDHandler(logger, domainDb)
+	serviceGetProductByID := query.NewGetProductByIDHandler(logger, domainDb, repoProduct)
 	err = mediatr.RegisterRequestHandler(serviceGetProductByID)
     if err != nil {
 		panic(err)

@@ -16,6 +16,7 @@ type Product interface {
     RestoreStock(tx *gorm.DB, productID uuid.UUID, quantity int32) error
     ListWithPagination(db *gorm.DB, condition map[string]interface{}, queryStr string, queryArgs []interface{}, orderBy string, offset, limit int) ([]entity.Product, error)
 	Count(db *gorm.DB, condition map[string]interface{}, queryStr string, queryArgs []interface{}) (int64, error)
+    Search(db *gorm.DB, condition map[string]interface{}) (*entity.Product, error)
 }
 
 type product struct {
@@ -92,4 +93,16 @@ func (p *product) Count(
 		return 0, err
 	}
 	return total, nil
+}
+
+func (p *product) Search(db *gorm.DB, condition map[string]interface{}) (*entity.Product, error) {
+	var result entity.Product
+	if err := db.Where(condition).First(&result).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		p.logger.Error("Cannot get product", customerror.LogErrorKey, err)
+		return nil, err
+	}
+	return &result, nil
 }

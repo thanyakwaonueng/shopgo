@@ -6,14 +6,15 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/thanyakwaonueng/shopgo/lib/database/entity"
+	repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
 	"github.com/thanyakwaonueng/shopgo/lib/util/customerror"
 	"gorm.io/gorm"
 )
 
 type GetProductByID struct {
-	logger   *slog.Logger
-	domainDb *gorm.DB
+	logger      *slog.Logger
+	domainDb    *gorm.DB
+	repoProduct repogeneric.Product
 }
 
 type RequestGetProductByID struct {
@@ -33,10 +34,12 @@ type ResultGetProductByID struct {
 func NewGetProductByIDHandler(
 	logger *slog.Logger,
 	domainDb *gorm.DB,
+	repoProduct repogeneric.Product,
 ) *GetProductByID {
 	return &GetProductByID{
-		logger:   logger,
-		domainDb: domainDb,
+		logger:      logger,
+		domainDb:    domainDb,
+		repoProduct: repoProduct,
 	}
 }
 
@@ -44,29 +47,27 @@ func (h *GetProductByID) Handle(
 	ctx context.Context,
 	request RequestGetProductByID,
 ) (ResultGetProductByID, error) {
-	var product entity.Product
+	// 1. Fetch product via Repository
+	product, err := h.repoProduct.Search(h.domainDb, map[string]interface{}{
+		"id": request.ID,
+	})
 
-	// Fetch product by ID
-	// GORM handles soft delete (deleted_at IS NULL) automatically
-	err := h.domainDb.First(&product, "id = ?", request.ID).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return ResultGetProductByID{}, customerror.NewInternalErr("Product not found")
-		}
-		h.logger.Error("Failed to fetch product", "error", err, "id", request.ID)
 		return ResultGetProductByID{}, customerror.NewInternalErr("Database error while fetching product")
 	}
 
-	// Map entity to Result struct
-	result := ResultGetProductByID{
+	if product == nil {
+		return ResultGetProductByID{}, customerror.NewInternalErr("Product not found")
+	}
+
+	// 2. Map entity to Result struct
+	return ResultGetProductByID{
 		ID:          product.ID,
 		Name:        product.Name,
 		Description: product.Description,
 		Price:       product.Price,
-		Stock:       int(product.Stock), 
+		Stock:       int(product.Stock),
 		CategoryID:  uint(product.CategoryID),
 		CreatedAt:   product.CreatedAt,
-	}
-
-	return result, nil
+	}, nil
 }
