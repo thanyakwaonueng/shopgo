@@ -5,14 +5,16 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/thanyakwaonueng/shopgo/lib/database/entity"
+	repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
 	"github.com/thanyakwaonueng/shopgo/lib/util/customerror"
 	"gorm.io/gorm"
 )
 
 type CancelOrder struct {
-	logger   *slog.Logger
-	domainDb *gorm.DB
+	logger      *slog.Logger
+	domainDb    *gorm.DB
+	repoOrder   repogeneric.Order
+	repoProduct repogeneric.Product
 }
 
 type RequestCancelOrder struct {
@@ -29,10 +31,14 @@ type ResultCancelOrder struct {
 func NewCancelOrderHandler(
 	logger *slog.Logger,
 	domainDb *gorm.DB,
+	repoOrder repogeneric.Order,
+	repoProduct repogeneric.Product,
 ) *CancelOrder {
 	return &CancelOrder{
-		logger:   logger,
-		domainDb: domainDb,
+		logger:      logger,
+		domainDb:    domainDb,
+		repoOrder:   repoOrder,
+		repoProduct: repoProduct,
 	}
 }
 
@@ -42,16 +48,14 @@ func (h *CancelOrder) Handle(
 ) (ResultCancelOrder, error) {
 	var result ResultCancelOrder
 
-	// Use Transaction to ensure atomicity of status update and stock restoration
 	err := h.domainDb.Transaction(func(tx *gorm.DB) error {
-		var order entity.Order
-
-		// 1. Fetch Order with Items
-		if err := tx.Preload("Items").First(&order, "id = ?", request.ID).Error; err != nil {
-			if err == gorm.ErrRecordNotFound {
-				return customerror.NewInternalErr("Order not found")
-			}
-			return err
+		// 1. Fetch Order with Items via Repository
+		order, err := h.repoOrder.SearchWithItems(tx, map[string]interface{}{"id": request.ID})
+		if err != nil {
+			return customerror.NewInternalErr("Database error")
+		}
+		if order == nil {
+			return customerror.NewInternalErr("Order not found")
 		}
 
 		// 2. Security Check: Ownership
@@ -61,26 +65,20 @@ func (h *CancelOrder) Handle(
 
 		// 3. Status Check: Only 'pending' can be cancelled
 		if order.Status != "pending" {
-			// Specific error code 06006 logic
 			return customerror.NewInternalErr("only pending orders can be cancelled")
 		}
 
-        //GORM's .Preload("Items") is designed to replace manual JOIN queries for 1-to-Many relationships.
-        //according to mr.germini, I'm putting this here cuz it definietly need to be under review
-		// 4. Restore Stock for each item
+		// 4. Restore Stock for each item via Product Repository
 		for _, item := range order.Items {
-			err := tx.Model(&entity.Product{}).
-				Where("id = ?", item.ProductID).
-				Update("stock", gorm.Expr("stock + ?", item.Quantity)).Error
-			if err != nil {
-				return err
+			if err := h.repoProduct.RestoreStock(tx, item.ProductID, item.Quantity); err != nil {
+				return customerror.NewInternalErr("Failed to restore inventory")
 			}
 		}
 
-		// 5. Update Order Status
+		// 5. Update Order Status via Repository
 		order.Status = "cancelled"
-		if err := tx.Save(&order).Error; err != nil {
-			return err
+		if err := h.repoOrder.Update(tx, order); err != nil {
+			return customerror.NewInternalErr("Failed to update order status")
 		}
 
 		result = ResultCancelOrder{
@@ -90,9 +88,9 @@ func (h *CancelOrder) Handle(
 
 		return nil
 	})
-    
-    //it should be not wrapped in custome error base on pattern in original codebase
+
 	if err != nil {
+		h.logger.Error("Order cancellation failed", "error", err.Error())
 		return ResultCancelOrder{}, err
 	}
 

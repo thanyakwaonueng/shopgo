@@ -44,7 +44,7 @@ func Register(
 	}
 
     // Add CancelOrder registration
-	serviceCancelOrder := command.NewCancelOrderHandler(logger, domainDb)
+	serviceCancelOrder := command.NewCancelOrderHandler(logger, domainDb, repoOrder, repoProduct)
 	err = mediatr.RegisterRequestHandler(serviceCancelOrder)
     if err != nil {
 		panic(err)

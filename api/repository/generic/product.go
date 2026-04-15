@@ -2,6 +2,8 @@ package repogeneric
 
 import (
 	"log/slog"
+
+    "github.com/google/uuid"
 	"github.com/thanyakwaonueng/shopgo/lib/database/entity"
 	"github.com/thanyakwaonueng/shopgo/lib/util/customerror"
 	"gorm.io/gorm"
@@ -11,6 +13,7 @@ import (
 type Product interface {
 	SearchWithLock(tx *gorm.DB, condition map[string]interface{}) (*entity.Product, error)
 	Update(tx *gorm.DB, product *entity.Product) error
+    RestoreStock(tx *gorm.DB, productID uuid.UUID, quantity int32) error
 }
 
 type product struct {
@@ -34,6 +37,16 @@ func (p *product) SearchWithLock(tx *gorm.DB, condition map[string]interface{}) 
 func (p *product) Update(tx *gorm.DB, product *entity.Product) error {
 	if err := tx.Save(product).Error; err != nil {
 		p.logger.Error("Cannot update product", customerror.LogErrorKey, err)
+		return err
+	}
+	return nil
+}
+
+func (p *product) RestoreStock(tx *gorm.DB, productID uuid.UUID, quantity int32) error {
+	if err := tx.Model(&entity.Product{}).
+		Where("id = ?", productID).
+		Update("stock", gorm.Expr("stock + ?", quantity)).Error; err != nil {
+		p.logger.Error("Cannot restore product stock", customerror.LogErrorKey, err)
 		return err
 	}
 	return nil
