@@ -72,7 +72,11 @@ var _ = Describe("GetUserByID", func() {
             })
 
         })
-
+    })
+    // ------------------
+    // Sad path
+    // ------------------
+    Context("Sad path", func() {
         When("the user does not exist", func(){
 			// ARRANGE: Tell the mock what to return
             BeforeEach(func (){
@@ -95,7 +99,6 @@ var _ = Describe("GetUserByID", func() {
 			    Expect(result).To(BeZero())
             })
         })
-
     })
     // ------------------
     // Repository error

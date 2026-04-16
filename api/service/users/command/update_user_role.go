@@ -28,9 +28,14 @@ func NewUpdateUserRoleHandler(logger *slog.Logger, domainDb *gorm.DB, repoUser r
 
 func (h *UpdateUserRole) Handle(ctx context.Context, request RequestUpdateUserRole) (bool, error) {
 	user, err := h.repoUser.Search(h.domainDb, map[string]interface{}{"id": request.ID}, "")
-	if err != nil || user == nil {
-		return false, customerror.NewInternalErr("User not found")
-	}
+
+    if err != nil {
+        return false, customerror.NewInternalErr("Database error while retrieving user")
+    }
+
+    if user == nil {
+        return false, customerror.NewInternalErr("User not found")
+    }
 
 	user.Role = util.UserRole(request.Role)
 
