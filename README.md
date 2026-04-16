@@ -1,3 +1,5 @@
+TODAY WORK: writing more unit test, continueing from .../shopgo/api/service/orders/command
+
 *note: some service is not purely in repository pattern such as register, order_cancel, (maybe a few more) since I still import database/entity and initiate database transaction for some action that I want it to be atomic, perhaps I must refactor it into using transaction manager interface or something, just noting here so I don't forget.
 
 DISCLAIMER ==> I commit .ENV because this project was meant to be only for presentation purpose(I'm not going to do this in prod. I swear), also I plan it to be like the reviewer need to mostly only run build_docker.sh script just to setup&review, but its not done yet you still have to excute the sql yourself to set up the relations, I'll make a pre-seeding function to it later if I'm able to,
