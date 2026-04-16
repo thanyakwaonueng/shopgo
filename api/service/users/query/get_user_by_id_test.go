@@ -47,7 +47,7 @@ var _ = Describe("GetUserByID", func() {
     // ------------------
     // Happy path
     // ------------------
-    Context("Good path", func() {
+    Context("Happy path", func() {
         When("the user exists", func() {
 			// ARRANGE: Tell the mock what to return
             BeforeEach(func (){
