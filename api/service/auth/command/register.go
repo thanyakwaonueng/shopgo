@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/thanyakwaonueng/shopgo/lib/database/entity"
+	"github.com/thanyakwaonueng/shopgo/lib/util"
 	"github.com/thanyakwaonueng/shopgo/lib/jwt"
 	repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
 	"github.com/thanyakwaonueng/shopgo/lib/util/customerror"
@@ -92,7 +93,7 @@ func (r *Register) Handle(
 			Email:        request.Email,
 			PasswordHash: string(hashedPassword),
 			Name:         request.Name,
-			Role:         entity.RoleCustomer,
+			Role:         util.RoleCustomer,
 			CreatedAt:    time.Now(),
 			UpdatedAt:    time.Now(),
 		}

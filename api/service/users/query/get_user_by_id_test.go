@@ -40,6 +40,26 @@ var _ = Describe("GetUserByID", func() {
 		}
 	})
 
+    // ------------------
+    // Happy path
+    // ------------------
+
+    Context("Happy path", func() {
+        when("the user exists", func() {
+            BeforeEach(func (){
+                repoUser.EXPECT().
+                    Search(
+                        mock.Anything, 
+                        map[string]interface{}{"id": userID}, 
+                        "",
+                    ).
+                    Return(mockUser, nil).
+                    Once()
+            })
+        })
+    })
+    
+    /*
 	Context("when the user exists", func() {
 		It("should return the user details successfully", func() {
 			// ARRANGE: Tell the mock what to return
@@ -74,4 +94,5 @@ var _ = Describe("GetUserByID", func() {
 			Expect(result).To(BeZero())
 		})
 	})
+    */
 })

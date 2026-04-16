@@ -3,22 +3,13 @@ package entity
 import (
 	"time"
 	"github.com/google/uuid"
-)
-
-type OrderStatus string
-
-const (
-	StatusPending   OrderStatus = "pending"
-	StatusConfirmed OrderStatus = "confirmed"
-	StatusShipped   OrderStatus = "shipped"
-	StatusDelivered OrderStatus = "delivered"
-	StatusCancelled OrderStatus = "cancelled"
+    "github.com/thanyakwaonueng/shopgo/lib/util"
 )
 
 type Order struct {
 	ID          uuid.UUID   `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
 	UserID      uuid.UUID   `gorm:"type:uuid;not null;index:idx_orders_user_id"`
-	Status      OrderStatus `gorm:"type:order_status;default:pending;index:idx_orders_status"`
+	Status      util.OrderStatus `gorm:"type:order_status;default:pending;index:idx_orders_status"`
 	TotalAmount float64     `gorm:"type:decimal(12,2);not null"`
 	Note        string      `gorm:"type:text"`
 	CreatedAt   time.Time   `gorm:"not null;default:CURRENT_TIMESTAMP;index:idx_orders_created_at,sort:desc"`

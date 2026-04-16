@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
-	"github.com/thanyakwaonueng/shopgo/lib/database/entity"
+	"github.com/thanyakwaonueng/shopgo/lib/util"
 	"github.com/thanyakwaonueng/shopgo/lib/util/customerror"
 	"gorm.io/gorm"
 )
@@ -60,7 +60,7 @@ func (h *UpdateOrderStatus) Handle(
 	}
 
 	// 2. State Machine Logic (Business Rules)
-	validNext := map[entity.OrderStatus]entity.OrderStatus{
+	validNext := map[util.OrderStatus]util.OrderStatus{
 		"pending":   "confirmed",
 		"confirmed": "shipped",
 		"shipped":   "delivered",
@@ -74,8 +74,8 @@ func (h *UpdateOrderStatus) Handle(
 		return ResultUpdateOrderStatus{}, customerror.New(6, 5, errMsg)
 	}
 
-	// 3. Update the entity
-	order.Status = entity.OrderStatus(request.Status)
+	// 3. Update the I don't know maybe status?
+	order.Status = util.OrderStatus(request.Status)
 
 	// 4. Save using Repository
 	if err := h.repoOrder.Update(h.domainDb, order); err != nil {

@@ -3,13 +3,7 @@ package entity
 import (
 	"time"
 	"github.com/google/uuid"
-)
-
-type UserRole string
-
-const (
-	RoleCustomer UserRole = "customer"
-	RoleAdmin    UserRole = "admin"
+    "github.com/thanyakwaonueng/shopgo/lib/util"
 )
 
 type User struct {
@@ -17,7 +11,7 @@ type User struct {
 	Email        string    `gorm:"type:varchar(255);unique;not null;index:idx_users_email"`
 	PasswordHash string    `gorm:"type:varchar(255);not null"`
 	Name         string    `gorm:"type:varchar(255);not null"`
-	Role         UserRole  `gorm:"type:user_role;default:customer;index:idx_users_role"`
+	Role         util.UserRole  `gorm:"type:user_role;default:customer;index:idx_users_role"`
 	CreatedAt    time.Time `gorm:"not null;default:CURRENT_TIMESTAMP"`
 	UpdatedAt    time.Time `gorm:"not null;default:CURRENT_TIMESTAMP"`
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	repogeneric "github.com/thanyakwaonueng/shopgo/api/repository/generic"
 	"github.com/thanyakwaonueng/shopgo/lib/util/customerror"
-	"github.com/thanyakwaonueng/shopgo/lib/database/entity"
+	"github.com/thanyakwaonueng/shopgo/lib/util"
 	"gorm.io/gorm"
 )
 
@@ -32,7 +32,7 @@ func (h *UpdateUserRole) Handle(ctx context.Context, request RequestUpdateUserRo
 		return false, customerror.NewInternalErr("User not found")
 	}
 
-	user.Role = entity.UserRole(request.Role)
+	user.Role = util.UserRole(request.Role)
 
 	if err := h.repoUser.Update(h.domainDb, user); err != nil {
 		return false, customerror.NewInternalErr("Failed to update user role")
