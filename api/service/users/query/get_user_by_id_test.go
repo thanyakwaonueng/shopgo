@@ -2,7 +2,7 @@ package query_test
 
 import (
 	"context"
-	//"errors"
+	"errors"
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -17,6 +17,7 @@ var _ = Describe("GetUserByID", func() {
 	var (
 		ctx        context.Context
 		repoUser   *mockRepo.MockUser // Your generated mock!
+        req        query.RequestGetUserByID
 		service    *query.GetUserByID
 		userID     uuid.UUID
 		mockUser   *entity.User
@@ -31,6 +32,9 @@ var _ = Describe("GetUserByID", func() {
 		
 		// 2. Inject Mock into Service
 		service = query.NewGetUserByIDHandler(logger, nil, repoUser)
+        req = query.RequestGetUserByID{
+            ID: userID,
+        }
 
 		// 3. Prepare dummy data
 		mockUser = &entity.User{
@@ -43,9 +47,9 @@ var _ = Describe("GetUserByID", func() {
     // ------------------
     // Happy path
     // ------------------
-
-    Context("Happy path", func() {
-        when("the user exists", func() {
+    Context("Good path", func() {
+        When("the user exists", func() {
+			// ARRANGE: Tell the mock what to return
             BeforeEach(func (){
                 repoUser.EXPECT().
                     Search(
@@ -56,43 +60,67 @@ var _ = Describe("GetUserByID", func() {
                     Return(mockUser, nil).
                     Once()
             })
+
+            It("should return user details correctly", func(){
+			    // ACT: Call the actual service
+                result, err := service.Handle(ctx, req)
+
+			    // ASSERT: Check results using Gomega
+			    Expect(err).ToNot(HaveOccurred())
+			    Expect(result.Email).To(Equal("test@example.com"))
+			    Expect(result.ID).To(Equal(userID))
+            })
+
+        })
+
+        When("the user does not exist", func(){
+			// ARRANGE: Tell the mock what to return
+            BeforeEach(func (){
+                repoUser.EXPECT().
+                    Search(
+                        mock.Anything, 
+                        mock.Anything, 
+                        mock.Anything, 
+                    ).
+                    Return(nil, nil).
+                    Once()
+            })
+
+            It("should return an error", func(){
+			    // ACT: Call the actual service
+                result, err := service.Handle(ctx, req)
+
+			    // ASSERT
+			    Expect(err).To(HaveOccurred())
+			    Expect(result).To(BeZero())
+            })
+        })
+
+    })
+    // ------------------
+    // Repository error
+    // ------------------
+    Context("Repository errors", func(){
+        When("repository execute fails", func(){
+			// ARRANGE: Tell the mock what to return
+            BeforeEach(func (){
+                repoUser.EXPECT().
+                    Search(
+                        mock.Anything, 
+                        mock.Anything, 
+                        mock.Anything, 
+                    ).
+                    Return(nil, errors.New("db error")).
+                    Once()
+            })
+
+            It("should return an error", func(){
+			    // ACT: Call the actual service
+                _, err := service.Handle(ctx, req)
+
+			    // ASSERT
+			    Expect(err).To(HaveOccurred())
+            })
         })
     })
-    
-    /*
-	Context("when the user exists", func() {
-		It("should return the user details successfully", func() {
-			// ARRANGE: Tell the mock what to return
-			repoUser.EXPECT().
-				Search(mock.Anything, map[string]interface{}{"id": userID}, "").
-				Return(mockUser, nil).
-				Once()
-
-			// ACT: Call the actual service
-			result, err := service.Handle(ctx, query.RequestGetUserByID{ID: userID})
-
-			// ASSERT: Check results using Gomega
-			Expect(err).ToNot(HaveOccurred())
-			Expect(result.Email).To(Equal("test@example.com"))
-			Expect(result.ID).To(Equal(userID))
-		})
-	})
-
-	Context("when the user does not exist", func() {
-		It("should return an error", func() {
-			// ARRANGE: Mock returns nil (not found)
-			repoUser.EXPECT().
-				Search(mock.Anything, mock.Anything, mock.Anything).
-				Return(nil, nil).
-				Once()
-
-			// ACT
-			result, err := service.Handle(ctx, query.RequestGetUserByID{ID: userID})
-
-			// ASSERT
-			Expect(err).To(HaveOccurred())
-			Expect(result).To(BeZero())
-		})
-	})
-    */
 })
