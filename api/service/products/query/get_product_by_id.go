@@ -28,7 +28,15 @@ type ResultGetProductByID struct {
 	Price       float64   `json:"price"`
 	Stock       int       `json:"stock"`
 	CategoryID  uint      `json:"category_id"`
+    //add this to satisfy frontend requirement -> et a single product with its category
+    Category    CategorySummary `json:"category"`
 	CreatedAt   time.Time `json:"created_at"`
+}
+
+//add this to satisfy frontend requirement -> et a single product with its category
+type CategorySummary struct {
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
 }
 
 func NewGetProductByIDHandler(
@@ -48,7 +56,7 @@ func (h *GetProductByID) Handle(
 	request RequestGetProductByID,
 ) (ResultGetProductByID, error) {
 	// 1. Fetch product via Repository
-	product, err := h.repoProduct.Search(h.domainDb, map[string]interface{}{
+	product, err := h.repoProduct.Search(h.domainDb.Preload("Category"), map[string]interface{}{
 		"id": request.ID,
 	})
 
@@ -68,6 +76,11 @@ func (h *GetProductByID) Handle(
 		Price:       product.Price,
 		Stock:       int(product.Stock),
 		CategoryID:  uint(product.CategoryID),
+        // Map the preloaded category data here
+		Category: CategorySummary{
+			ID:   uint(product.Category.ID),
+			Name: product.Category.Name,
+		},
 		CreatedAt:   product.CreatedAt,
 	}, nil
 }

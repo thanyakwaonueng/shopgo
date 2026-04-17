@@ -34,7 +34,7 @@ var _ = Describe("GetProducts", func() {
 	BeforeEach(func() {
 		ctx = context.Background()
 		repoProduct = new(mockRepo.MockProduct)
-		service = query.NewGetProductsHandler(logger, nil, repoProduct)
+		service = query.NewGetProductsHandler(logger, db, repoProduct)
 
 		mockTime = time.Date(2026, 4, 17, 10, 0, 0, 0, time.UTC)
 
@@ -44,6 +44,8 @@ var _ = Describe("GetProducts", func() {
 			Price:      50.0,
 			Stock:      10,
 			CategoryID: 1,
+            // ADD THIS
+            Category:   entity.Category{ID: 1, Name: "Electronics"},
 			CreatedAt:  mockTime,
 		}
 
@@ -53,6 +55,8 @@ var _ = Describe("GetProducts", func() {
 			Price:      150.0,
 			Stock:      5,
 			CategoryID: 1,
+            // ADD THIS
+            Category:   entity.Category{ID: 1, Name: "Electronics"},
 			CreatedAt:  mockTime.Add(time.Hour),
 		}
 
@@ -62,6 +66,8 @@ var _ = Describe("GetProducts", func() {
 			Price:      300.0,
 			Stock:      2,
 			CategoryID: 2,
+            // ADD THIS
+            Category:    entity.Category{ID: 2, Name: "Clothing"},
 			CreatedAt:  mockTime.Add(2 * time.Hour),
 		}
 
@@ -103,6 +109,10 @@ var _ = Describe("GetProducts", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(result.Total).To(Equal(mockTotal))
 				Expect(result.Items).To(HaveLen(3))
+
+                // New Assertion: Check if the category name survived the trip
+                Expect(result.Items[0].Category.Name).To(Equal("Clothing")) 
+                Expect(result.Items[0].Category.ID).To(Equal(uint(2))) // product3 was category 2
 				
 				// Verification of mapping
                 // The first item should be product3 because it has the latest timestamp

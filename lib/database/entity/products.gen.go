@@ -15,6 +15,9 @@ type Product struct {
 	CategoryID  int32          `gorm:"not null;index:idx_products_category_id"`
 	CreatedAt   time.Time      `gorm:"not null;default:CURRENT_TIMESTAMP"`
 	DeletedAt   gorm.DeletedAt `gorm:"index:idx_products_deleted_at"` // Enables GORM Soft Delete
+    
+    //I add this to satisfy frontend requirement -> Get a single product with its category
+    Category    Category `gorm:"foreignKey:CategoryID"`
 }
 
 func (Product) TableName() string {

@@ -35,7 +35,17 @@ type ProductItem struct {
 	Price      float64   `json:"price"`
 	Stock      int       `json:"stock"`
 	CategoryID uint      `json:"category_id"`
+    //add this to satisfy frontend requirement -> et a single product with its category
+    Category   CategorySummary `json:"category"`
 }
+
+/*
+//add this to satisfy frontend requirement -> et a single product with its category
+type CategorySummary struct {
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
+}
+*/
 
 func NewGetProductsHandler(
 	logger *slog.Logger,
@@ -82,7 +92,7 @@ func (h *GetProducts) Handle(ctx context.Context, request RequestGetProducts) (R
 
 	// 4. Fetch Products with Pagination
 	offset := (request.Page - 1) * request.Limit
-	products, err := h.repoProduct.ListWithPagination(h.domainDb, condition, queryStr, queryArgs, orderBy, offset, request.Limit)
+	products, err := h.repoProduct.ListWithPagination(h.domainDb.Preload("Category"), condition, queryStr, queryArgs, orderBy, offset, request.Limit)
 	if err != nil {
 		return ResultGetProducts{}, customerror.NewInternalErr("Database error while fetching products")
 	}
@@ -96,6 +106,11 @@ func (h *GetProducts) Handle(ctx context.Context, request RequestGetProducts) (R
 			Price:      p.Price,
 			Stock:      int(p.Stock),
 			CategoryID: uint(p.CategoryID),
+            // Map the preloaded data here
+            Category: CategorySummary{
+                ID:   uint(p.Category.ID),
+                Name: p.Category.Name,
+            },
 		}
 	}
 

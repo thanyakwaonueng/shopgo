@@ -9,3 +9,6 @@ WARNING: by runing build_docker.sh will remove your postgresql volume(from my un
 my personal note: query params for testing /products, {{base_url}}/products?page=1&limit=5, {{base_url}}/products?q=Go, {{base_url}}/products?category_id=1, {{base_url}}/products?q=Design&category_id=3&sort=price_desc, {{base_url}}/products?sort=newest, {{base_url}}/products?sort=price_asc
 
 future plan: implement few unit testings for each service, fix error code, fix swagger doc not generate, refactor of few(prolly 2-3) service to purely be repository pattern, clarify whether or not using validator at response is necessary.
+
+
+unit test: "If the code is literally just mapping a request to a database call, it's often skipped because the cost of maintaining the test is higher than the value the test provides." - mr.germini, perhaps this is the reason why some service not get unit tested in mr.saza example code, so for now I'll left out auth(to be fair there maybe few more that I should left out too but I written it anyway so for now left it be)

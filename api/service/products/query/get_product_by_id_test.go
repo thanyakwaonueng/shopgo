@@ -33,7 +33,7 @@ var _ = Describe("GetProductByID", func() {
 		ctx = context.Background()
 		repoProduct = new(mockRepo.MockProduct)
 		// Passing nil for domainDb as it's a simple Query service
-		service = query.NewGetProductByIDHandler(logger, nil, repoProduct)
+		service = query.NewGetProductByIDHandler(logger, db, repoProduct)
 
 		productID = uuid.New()
 		mockNow = time.Date(2026, 4, 17, 10, 0, 0, 0, time.UTC)
@@ -46,6 +46,10 @@ var _ = Describe("GetProductByID", func() {
 			Price:       89.99,
 			Stock:       50,
 			CategoryID:  3,
+            Category: entity.Category{
+                ID:   3,
+                Name: "Electronics",
+            },
 			CreatedAt:   mockNow,
 		}
 
@@ -78,6 +82,8 @@ var _ = Describe("GetProductByID", func() {
 				Expect(result.Price).To(Equal(float64(product1.Price)))
 				Expect(result.Stock).To(Equal(int(product1.Stock)))
 				Expect(result.CreatedAt).To(Equal(product1.CreatedAt))
+                Expect(result.Category.Name).To(Equal("Electronics"))
+                Expect(result.Category.ID).To(Equal(uint(3)))
 			})
 		})
 	})
