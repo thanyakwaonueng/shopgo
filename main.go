@@ -25,6 +25,18 @@ import (
     "github.com/yokeTH/gofiber-scalar/scalar/v2"
 )
 
+// Main function
+//
+//	@title						shopgo API
+//	@version					1.0
+//	@description				This is shopgo API
+//	@termsOfService				http://swagger.io/terms/
+//	@BasePath					/api/v1
+//
+//	@securityDefinitions.apikey	BearerAuth
+//	@in							header
+//	@name						Authorization
+//	@description				Example of "Value": Bearer <your_token>
 func main(){
 
     environment.New(0)

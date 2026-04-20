@@ -1,0 +1,1069 @@
+basePath: /api/v1
+definitions:
+  command.RequestRefreshToken:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  command.ResultCancelOrder:
+    properties:
+      id:
+        type: string
+      status:
+        type: string
+    type: object
+  command.ResultCreateCategory:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      slug:
+        type: string
+    type: object
+  command.ResultCreateOrder:
+    properties:
+      id:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/command.ResultOrderItem'
+        type: array
+      status:
+        type: string
+      total_amount:
+        type: number
+    type: object
+  command.ResultCreateProduct:
+    properties:
+      category_id:
+        type: integer
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      stock:
+        type: integer
+    type: object
+  command.ResultLogin:
+    properties:
+      access_token:
+        type: string
+      access_token_exp:
+        type: integer
+      refresh_token:
+        type: string
+      refresh_token_exp:
+        type: integer
+    type: object
+  command.ResultOrderItem:
+    properties:
+      name:
+        type: string
+      product_id:
+        type: string
+      quantity:
+        type: integer
+      unit_price:
+        type: number
+    type: object
+  command.ResultRefreshToken:
+    properties:
+      access_token:
+        type: string
+      access_token_exp:
+        type: integer
+    type: object
+  command.ResultUpdateCategory:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      slug:
+        type: string
+    type: object
+  command.ResultUpdateOrderStatus:
+    properties:
+      id:
+        type: string
+      status:
+        type: string
+    type: object
+  command.ResultUpdateProduct:
+    properties:
+      category_id:
+        type: integer
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      stock:
+        type: integer
+    type: object
+  customerror.Model:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  handlerauth.RequestLogin:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  handlerauth.RequestRegister:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  handlercategories.RequestCreateCategory:
+    properties:
+      name:
+        type: string
+      slug:
+        type: string
+    required:
+    - name
+    - slug
+    type: object
+  handlercategories.RequestUpdateCategory:
+    properties:
+      name:
+        type: string
+      slug:
+        type: string
+    required:
+    - name
+    - slug
+    type: object
+  handlerorders.RequestCreateOrder:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/handlerorders.RequestCreateOrderItem'
+        type: array
+      note:
+        type: string
+    required:
+    - items
+    type: object
+  handlerorders.RequestCreateOrderItem:
+    properties:
+      product_id:
+        type: string
+      quantity:
+        type: integer
+    required:
+    - product_id
+    - quantity
+    type: object
+  handlerorders.RequestUpdateOrderStatusBody:
+    properties:
+      status:
+        type: string
+    required:
+    - status
+    type: object
+  handlerproducts.RequestCreateProduct:
+    properties:
+      category_id:
+        type: integer
+      description:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      stock:
+        minimum: 0
+        type: integer
+    required:
+    - category_id
+    - name
+    - price
+    type: object
+  handlerproducts.RequestUpdateProductBody:
+    properties:
+      category_id:
+        type: integer
+      description:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      stock:
+        minimum: 0
+        type: integer
+    required:
+    - category_id
+    - name
+    - price
+    type: object
+  handlerusers.RequestUpdateUserRole:
+    properties:
+      role:
+        enum:
+        - customer
+        - admin
+        type: string
+    required:
+    - role
+    type: object
+  query.CategorySummary:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  query.OrderItemDTO:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      note:
+        type: string
+      status:
+        type: string
+      total_amount:
+        type: number
+      user_id:
+        type: string
+    type: object
+  query.ProductItem:
+    properties:
+      category:
+        allOf:
+        - $ref: '#/definitions/query.CategorySummary'
+        description: add this to satisfy frontend requirement -> et a single product
+          with its category
+      category_id:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      stock:
+        type: integer
+    type: object
+  query.ResultGetCategory:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      slug:
+        type: string
+    type: object
+  query.ResultGetMe:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      role:
+        type: string
+    type: object
+  query.ResultGetOrderByID:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/query.ResultOrderItemDetail'
+        type: array
+      note:
+        type: string
+      status:
+        type: string
+      total_amount:
+        type: number
+      user_id:
+        type: string
+    type: object
+  query.ResultGetOrders:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/query.OrderItemDTO'
+        type: array
+      total:
+        type: integer
+    type: object
+  query.ResultGetProductByID:
+    properties:
+      category:
+        allOf:
+        - $ref: '#/definitions/query.CategorySummary'
+        description: add this to satisfy frontend requirement -> et a single product
+          with its category
+      category_id:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      stock:
+        type: integer
+    type: object
+  query.ResultGetProducts:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/query.ProductItem'
+        type: array
+      total:
+        type: integer
+    type: object
+  query.ResultGetUserByID:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      role:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  query.ResultGetUsers:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/query.UserItem'
+        type: array
+      total:
+        type: integer
+    type: object
+  query.ResultOrderItemDetail:
+    properties:
+      product_id:
+        type: string
+      quantity:
+        type: integer
+      unit_price:
+        type: number
+    type: object
+  query.UserItem:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      role:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: This is shopgo API
+  termsOfService: http://swagger.io/terms/
+  title: shopgo API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with username and password. Use remember_me=true
+        to extend refresh token expiration to 30 days     (instead of 1 day).
+      parameters:
+      - description: Login credentials (remember_me is optional, defaults to false)
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlerauth.RequestLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/command.ResultLogin'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      summary: User Login
+      tags:
+      - Auth
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve details of the currently authenticated user using the
+        access token.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/query.ResultGetMe'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      security:
+      - BearerAuth: []
+      summary: Get Current User
+      tags:
+      - Auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Get new access token using refresh token
+      parameters:
+      - description: Refresh token
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/command.RequestRefreshToken'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/command.ResultRefreshToken'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      summary: Refresh access token
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create new user(if the email not exist in database) then sign the
+        token back then auto login
+      parameters:
+      - description: Registration Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlerauth.RequestRegister'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: User Register
+      tags:
+      - Auth
+  /categories:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all available product categories.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/query.ResultGetCategory'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      summary: List All Categories
+      tags:
+      - Category
+    post:
+      consumes:
+      - application/json
+      description: Create a new product categories. Restricted to Admin users only.
+      parameters:
+      - description: Category Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlercategories.RequestCreateCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/command.ResultCreateCategory'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Model'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      security:
+      - BearerAuth: []
+      summary: Create New Category
+      tags:
+      - Categories
+  /categories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a category. Returns 400 if products are linked. Restricted
+        to Admin.
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Model'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      security:
+      - BearerAuth: []
+      summary: Delete Category
+      tags:
+      - Categories
+    put:
+      consumes:
+      - application/json
+      description: Update an existing product category by ID. Restricted to Admin
+        users only.
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated Category Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlercategories.RequestUpdateCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/command.ResultUpdateCategory'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Model'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      security:
+      - BearerAuth: []
+      summary: Update Category
+      tags:
+      - Categories
+  /orders:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of orders. Customers see only their own, Admins
+        see all. Supports pagination and status filtering.
+      parameters:
+      - description: 'Default: 1'
+        in: query
+        name: page
+        type: integer
+      - description: 'Default: 20, max: 100'
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/query.ResultGetOrders'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      security:
+      - BearerAuth: []
+      summary: List Orders
+      tags:
+      - Orders
+    post:
+      consumes:
+      - application/json
+      description: Place an order, validates stock, and deducts inventory in a transaction.
+      parameters:
+      - description: Order Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlerorders.RequestCreateOrder'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/command.ResultCreateOrder'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      security:
+      - BearerAuth: []
+      summary: Place a New Order
+      tags:
+      - Orders
+  /orders/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve full details of a single order with line items. Customers
+        can only access their own.
+      parameters:
+      - description: Order UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/query.ResultGetOrderByID'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Model'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.Model'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      security:
+      - BearerAuth: []
+      summary: Get Order Detail
+      tags:
+      - Orders
+  /orders/{id}/cancel:
+    post:
+      consumes:
+      - application/json
+      description: Cancel a pending order and restore product stock. Restricted to
+        the order owner or Admin.
+      parameters:
+      - description: Order UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/command.ResultCancelOrder'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Model'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      security:
+      - BearerAuth: []
+      summary: Cancel Order
+      tags:
+      - Orders
+  /orders/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Advance the order status. Restricted to Admin users only.
+      parameters:
+      - description: Order UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New Status
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlerorders.RequestUpdateOrderStatusBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/command.ResultUpdateOrderStatus'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Model'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      security:
+      - BearerAuth: []
+      summary: Update Order Status
+      tags:
+      - Orders
+  /products:
+    get:
+      consumes:
+      - application/json
+      description: List products with pagination, search, and filtering. Public.
+      parameters:
+      - description: 'Default: 1'
+        in: query
+        name: page
+        type: integer
+      - description: 'Default: 20, max: 100'
+        in: query
+        name: limit
+        type: integer
+      - description: Search by name
+        in: query
+        name: q
+        type: string
+      - description: Filter by category
+        in: query
+        name: category_id
+        type: integer
+      - description: price_asc | price_desc | newest
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/query.ResultGetProducts'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      summary: List Products
+      tags:
+      - Products
+    post:
+      consumes:
+      - application/json
+      description: Create a new product. Restricted to Admin users only.
+      parameters:
+      - description: Product Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlerproducts.RequestCreateProduct'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/command.ResultCreateProduct'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Model'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      security:
+      - BearerAuth: []
+      summary: Create New Product
+      tags:
+      - Products
+  /products/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft-delete a product by UUID. Restricted to Admin.
+      parameters:
+      - description: Product UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Model'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      security:
+      - BearerAuth: []
+      summary: Delete Product
+      tags:
+      - Products
+    get:
+      consumes:
+      - application/json
+      description: Retrieve full details of a single product by its UUID. Public.
+      parameters:
+      - description: Product UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/query.ResultGetProductByID'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Model'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      summary: Get Single Product
+      tags:
+      - Products
+    put:
+      consumes:
+      - application/json
+      description: Full update of an existing product by UUID. Restricted to Admin
+        users only.
+      parameters:
+      - description: Product UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated Product Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlerproducts.RequestUpdateProductBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/command.ResultUpdateProduct'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Model'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      security:
+      - BearerAuth: []
+      summary: Update Product
+      tags:
+      - Products
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: List all users with pagination and search. Admin only.
+      parameters:
+      - description: 'Default: 1'
+        in: query
+        name: page
+        type: integer
+      - description: 'Default: 20, max: 100'
+        in: query
+        name: limit
+        type: integer
+      - description: Search by name or email
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/query.ResultGetUsers'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      summary: List Users
+      tags:
+      - Users
+  /users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a single user's profile details by their UUID. Admin only.
+      parameters:
+      - description: User UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/query.ResultGetUserByID'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Model'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.Model'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      summary: Get User Profile
+      tags:
+      - Users
+  /users/{id}/role:
+    put:
+      consumes:
+      - application/json
+      description: Promote or demote a user's role. Admin only.
+      parameters:
+      - description: User UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New Role
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlerusers.RequestUpdateUserRole'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Model'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.Model'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.Model'
+      summary: Update User Role
+      tags:
+      - Users
+securityDefinitions:
+  BearerAuth:
+    description: 'Example of "Value": Bearer <your_token>'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

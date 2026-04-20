@@ -19,7 +19,7 @@ import (
 //	@Produce		json
 //	@Security		BearerAuth
 //	@Success		200	{object}	query.ResultGetMe
-//	@Failure		401	{object}	customerror.Model
+//	@Failure		400	{object}	customerror.Model
 //	@Router			/auth/me [get]
 func GetMe(logger *slog.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
@@ -38,7 +38,7 @@ func GetMe(logger *slog.Logger) fiber.Handler {
 		if err != nil {
 			customErr := customerror.UnmarshalError(err)
             logger.Error(customErr.Message)
-			return c.Status(fiber.StatusNotFound).JSON(customErr)
+			return c.Status(fiber.StatusBadRequest).JSON(customErr)
 		}
 
 		return c.JSON(result)
