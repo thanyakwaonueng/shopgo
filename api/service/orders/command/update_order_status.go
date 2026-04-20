@@ -51,7 +51,7 @@ func (h *UpdateOrderStatus) Handle(
 	}, "")
 
 	if err != nil {
-		return ResultUpdateOrderStatus{}, customerror.NewInternalErr("Database error")
+		return ResultUpdateOrderStatus{}, customerror.New(6, 0, "Database error")
 	}
 
 	if order == nil {
@@ -79,7 +79,7 @@ func (h *UpdateOrderStatus) Handle(
 
 	// 4. Save using Repository
 	if err := h.repoOrder.Update(h.domainDb, order); err != nil {
-		return ResultUpdateOrderStatus{}, customerror.NewInternalErr("Failed to save status")
+		return ResultUpdateOrderStatus{}, customerror.New(6, 0, "Failed to save status")
 	}
 
 	return ResultUpdateOrderStatus{

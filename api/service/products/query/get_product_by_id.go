@@ -61,7 +61,7 @@ func (h *GetProductByID) Handle(
 	})
 
 	if err != nil {
-		return ResultGetProductByID{}, customerror.NewInternalErr("Database error while fetching product")
+		return ResultGetProductByID{}, customerror.New(5, 0, "Database error while fetching product")
 	}
 
 	if product == nil {

@@ -41,7 +41,7 @@ func (h *DeleteProduct) Handle(
 		"id": request.ID,
 	})
 	if err != nil {
-		return false, customerror.NewInternalErr("Database error finding product")
+		return false, customerror.New(5, 0, "Database error finding product")
 	}
 
 	if product == nil {
@@ -50,7 +50,7 @@ func (h *DeleteProduct) Handle(
 
 	// 2. Perform the deletion using Repository
 	if err := h.repoProduct.Delete(h.domainDb, product); err != nil {
-		return false, customerror.NewInternalErr("Could not delete product")
+		return false, customerror.New(5, 0, "Could not delete product")
 	}
 
 	return true, nil

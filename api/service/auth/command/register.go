@@ -68,7 +68,7 @@ func (r *Register) Handle(
 	}, "")
 
 	if err != nil {
-		return ResultRegister{}, customerror.NewInternalErr("Database error during check")
+		return ResultRegister{}, customerror.New(2, 0, "Database error during check")
 	}
 
 	if existingUser != nil {
@@ -79,7 +79,7 @@ func (r *Register) Handle(
 	// 2. Hash Password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return ResultRegister{}, customerror.NewInternalErr("Failed to process password")
+		return ResultRegister{}, customerror.New(2, 0, "Failed to process password")
 	}
 
 	var result ResultRegister
@@ -100,7 +100,7 @@ func (r *Register) Handle(
 
 		// 3b. Create User record using repoUser.Create
 		if err := r.repoUser.Create(tx, newUser); err != nil {
-			return customerror.NewInternalErr("Database save failed")
+			return customerror.New(2, 0, "Database save failed")
 		}
 
 		// 4. Generate Tokens
@@ -110,7 +110,7 @@ func (r *Register) Handle(
 			false,
 		)
 		if err != nil {
-			return customerror.NewInternalErr("Token generation failed")
+			return customerror.New(2, 0, "Token generation failed")
 		}
 
 		// 5. Build Result

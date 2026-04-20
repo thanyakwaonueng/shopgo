@@ -59,11 +59,11 @@ func (h *CreateProduct) Handle(
 	}, "")
 
 	if err != nil {
-		return ResultCreateProduct{}, customerror.NewInternalErr("Failed to verify category")
+		return ResultCreateProduct{}, customerror.New(5, 0, "Failed to verify category")
 	}
 
 	if category == nil {
-		return ResultCreateProduct{}, customerror.NewInternalErr("Category does not exist")
+		return ResultCreateProduct{}, customerror.New(5, 0, "Category does not exist")
 	}
 
 	// 2. Prepare the entity
@@ -77,7 +77,7 @@ func (h *CreateProduct) Handle(
 
 	// 3. Insert into database using Product Repository
 	if err := h.repoProduct.Create(h.domainDb, &newProduct); err != nil {
-		return ResultCreateProduct{}, customerror.NewInternalErr("Could not create product.")
+		return ResultCreateProduct{}, customerror.New(5, 0, "Could not create product.")
 	}
 
 	// 4. Map back to Result DTO

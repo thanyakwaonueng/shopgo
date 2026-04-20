@@ -51,13 +51,13 @@ func (h *GetUsers) Handle(ctx context.Context, request RequestGetUsers) (ResultG
 
 	total, err := h.repoUser.Count(h.domainDb, condition, queryStr, queryArgs)
 	if err != nil {
-		return ResultGetUsers{}, customerror.NewInternalErr("Failed to retrieve user count")
+		return ResultGetUsers{}, customerror.New(3, 0, "Failed to retrieve user count")
 	}
 
 	offset := (request.Page - 1) * request.Limit
 	users, err := h.repoUser.ListWithPagination(h.domainDb, condition, queryStr, queryArgs, "created_at DESC", offset, request.Limit)
 	if err != nil {
-		return ResultGetUsers{}, customerror.NewInternalErr("Database error while fetching users")
+		return ResultGetUsers{}, customerror.New(3, 0, "Database error while fetching users")
 	}
 
 	items := make([]UserItem, len(users))

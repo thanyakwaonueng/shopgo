@@ -45,7 +45,7 @@ func (h *DeleteCategory) Handle(
 	}, "")
 
 	if err != nil {
-		return false, customerror.NewInternalErr("Database error")
+		return false, customerror.New(4, 0, "Database error")
 	}
 
 	if category == nil {
@@ -55,7 +55,7 @@ func (h *DeleteCategory) Handle(
 	// 2. Efficiently check for linked products using Custom Repo
 	exists, err := h.repoProductExistsByCat.Execute(h.domainDb, request.ID)
 	if err != nil {
-		return false, customerror.NewInternalErr("Database error checking product links")
+		return false, customerror.New(4, 0, "Database error checking product links")
 	}
 
 	if exists {
@@ -65,7 +65,7 @@ func (h *DeleteCategory) Handle(
 
 	// 3. Perform the deletion
 	if err := h.repoCategory.Delete(h.domainDb, category); err != nil {
-		return false, customerror.NewInternalErr("Could not delete category")
+		return false, customerror.New(4, 0, "Could not delete category")
 	}
 
 	return true, nil

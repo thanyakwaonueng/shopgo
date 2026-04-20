@@ -62,7 +62,7 @@ func (h *GetOrderByID) Handle(ctx context.Context, request RequestGetOrderByID) 
 	}
 
 	if order == nil {
-		return ResultGetOrderByID{}, customerror.NewInternalErr("Order not found")
+		return ResultGetOrderByID{}, customerror.New(6, 1, "Order not found")
 	}
 
 	// 2. Security Check: Multi-tenancy

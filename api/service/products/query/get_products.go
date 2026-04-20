@@ -87,14 +87,14 @@ func (h *GetProducts) Handle(ctx context.Context, request RequestGetProducts) (R
 	// 3. Count Total
 	total, err := h.repoProduct.Count(h.domainDb, condition, queryStr, queryArgs)
 	if err != nil {
-		return ResultGetProducts{}, customerror.NewInternalErr("Failed to retrieve product count")
+		return ResultGetProducts{}, customerror.New(5, 0, "Failed to retrieve product count")
 	}
 
 	// 4. Fetch Products with Pagination
 	offset := (request.Page - 1) * request.Limit
 	products, err := h.repoProduct.ListWithPagination(h.domainDb.Preload("Category"), condition, queryStr, queryArgs, orderBy, offset, request.Limit)
 	if err != nil {
-		return ResultGetProducts{}, customerror.NewInternalErr("Database error while fetching products")
+		return ResultGetProducts{}, customerror.New(5, 0, "Database error while fetching products")
 	}
 
 	// 5. Mapping

@@ -52,33 +52,33 @@ func (h *CancelOrder) Handle(
 		// 1. Fetch Order with Items via Repository
 		order, err := h.repoOrder.SearchWithItems(tx, map[string]interface{}{"id": request.ID})
 		if err != nil {
-			return customerror.NewInternalErr("Database error")
+			return customerror.New(6, 0, "Database error")
 		}
 		if order == nil {
-			return customerror.NewInternalErr("Order not found")
+			return customerror.New(6, 1, "Order not found")
 		}
 
 		// 2. Security Check: Ownership
 		if request.UserRole != "admin" && order.UserID != request.UserID {
-			return customerror.NewInternalErr("Access denied")
+			return customerror.New(6, 0, "Access denied")
 		}
 
 		// 3. Status Check: Only 'pending' can be cancelled
 		if order.Status != "pending" {
-			return customerror.NewInternalErr("only pending orders can be cancelled")
+			return customerror.New(6, 6, "only pending orders can be cancelled")
 		}
 
 		// 4. Restore Stock for each item via Product Repository
 		for _, item := range order.Items {
 			if err := h.repoProduct.RestoreStock(tx, item.ProductID, item.Quantity); err != nil {
-				return customerror.NewInternalErr("Failed to restore inventory")
+				return customerror.New(6, 0, "Failed to restore inventory")
 			}
 		}
 
 		// 5. Update Order Status via Repository
 		order.Status = "cancelled"
 		if err := h.repoOrder.Update(tx, order); err != nil {
-			return customerror.NewInternalErr("Failed to update order status")
+			return customerror.New(6, 0, "Failed to update order status")
 		}
 
 		result = ResultCancelOrder{

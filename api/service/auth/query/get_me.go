@@ -51,12 +51,12 @@ func (h *GetMe) Handle(
 
 	if err != nil {
 		// Logged inside the repository already, return a clean error
-		return ResultGetMe{}, customerror.NewInternalErr("Database error")
+		return ResultGetMe{}, customerror.New(2, 0, "Database error")
 	}
 
 	if user == nil {
 		// repoUser.Search returns nil, nil if no record is found
-		return ResultGetMe{}, customerror.NewInternalErr("User profile not found")
+		return ResultGetMe{}, customerror.New(2, 0, "User profile not found")
 	}
 
 	// 2. Map the database entity to the Result struct

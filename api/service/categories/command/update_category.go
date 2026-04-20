@@ -50,7 +50,7 @@ func (h *UpdateCategory) Handle(
 	}, "")
 
 	if err != nil {
-		return ResultUpdateCategory{}, customerror.NewInternalErr("Database error")
+		return ResultUpdateCategory{}, customerror.New(4, 0, "Database error")
 	}
 
 	if category == nil {

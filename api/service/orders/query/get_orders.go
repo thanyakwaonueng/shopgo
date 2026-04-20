@@ -67,7 +67,7 @@ func (h *GetOrders) Handle(ctx context.Context, request RequestGetOrders) (Resul
 	// 2. Count Total using Repository
 	total, err := h.repoOrder.Count(h.domainDb, condition)
 	if err != nil {
-		return ResultGetOrders{}, customerror.NewInternalErr("Failed to retrieve order count")
+		return ResultGetOrders{}, customerror.New(6, 0, "Failed to retrieve order count")
 	}
 
 	// 3. Fetch Paginated List using Repository
@@ -80,7 +80,7 @@ func (h *GetOrders) Handle(ctx context.Context, request RequestGetOrders) (Resul
 		request.Limit,
 	)
 	if err != nil {
-		return ResultGetOrders{}, customerror.NewInternalErr("Failed to retrieve orders")
+		return ResultGetOrders{}, customerror.New(6, 0, "Failed to retrieve orders")
 	}
 
 	// 4. Map entities to Result DTOs

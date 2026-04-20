@@ -69,18 +69,18 @@ func (h *CreateOrder) Handle(ctx context.Context, request RequestCreateOrder) (R
 			// 1. Fetch with Pessimistic Lock via Repository
 			product, err := h.repoProduct.SearchWithLock(tx, map[string]interface{}{"id": itemReq.ProductID})
 			if err != nil {
-				return customerror.NewInternalErr(fmt.Sprintf("Product %s not found", itemReq.ProductID))
+				return customerror.New(6, 1, fmt.Sprintf("Product %s not found", itemReq.ProductID))
 			}
 
 			// 2. Validate Stock
 			if product.Stock < itemReq.Quantity {
-				return customerror.NewInternalErr(fmt.Sprintf("product '%s' has insufficient stock", product.Name))
+				return customerror.New(6, 2, fmt.Sprintf("product '%s' has insufficient stock", product.Name))
 			}
 
 			// 3. Deduct Stock via Repository
 			product.Stock -= itemReq.Quantity
 			if err := h.repoProduct.Update(tx, product); err != nil {
-				return customerror.NewInternalErr("Failed to update inventory")
+				return customerror.New(6, 0, "Failed to update inventory")
 			}
 
 			totalAmount += product.Price * float64(itemReq.Quantity)
@@ -100,7 +100,7 @@ func (h *CreateOrder) Handle(ctx context.Context, request RequestCreateOrder) (R
 			Note:        request.Note,
 		}
 		if err := h.repoOrder.Create(tx, &finalOrder); err != nil {
-			return customerror.NewInternalErr("Failed to create order header")
+			return customerror.New(6, 0, "Failed to create order header")
 		}
 
 		// 5. Create Order Items
@@ -112,7 +112,7 @@ func (h *CreateOrder) Handle(ctx context.Context, request RequestCreateOrder) (R
 				UnitPrice: item.UnitPrice,
 			}
 			if err := h.repoOrder.CreateItem(tx, &orderItem); err != nil {
-				return customerror.NewInternalErr("Failed to create order items")
+				return customerror.New(6, 0, "Failed to create order items")
 			}
 		}
 

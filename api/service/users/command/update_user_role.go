@@ -30,7 +30,7 @@ func (h *UpdateUserRole) Handle(ctx context.Context, request RequestUpdateUserRo
 	user, err := h.repoUser.Search(h.domainDb, map[string]interface{}{"id": request.ID}, "")
 
     if err != nil {
-        return false, customerror.NewInternalErr("Database error while retrieving user")
+        return false, customerror.New(3, 0, "Database error while retrieving user")
     }
 
     if user == nil {

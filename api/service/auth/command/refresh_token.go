@@ -48,14 +48,14 @@ func (r *RefreshToken) Handle(
 	refreshClaims, err := r.jwtManager.ExtractRefreshToken(request.RefreshToken)
 	if err != nil {
 		r.logger.Error("Refresh failed: invalid signature or expired", "error", err)
-		return ResultRefreshToken{}, customerror.NewInternalErr("Session expired, please login again")
+		return ResultRefreshToken{}, customerror.New(2, 0, "Session expired, please login again")
 	}
 
 	// 2. Quick DB check using Custom Repository
 	userRole, err := r.repoUserRoleById.Execute(r.domainDb, refreshClaims.UserId)
 	if err != nil {
 		// If user doesn't exist or DB is down, we deny the rotation
-		return ResultRefreshToken{}, customerror.NewInternalErr("User account no longer active")
+		return ResultRefreshToken{}, customerror.New(2, 0, "User account no longer active")
 	}
 
 	// 3. Generate New Pair (Rotation)
@@ -65,7 +65,7 @@ func (r *RefreshToken) Handle(
 		false,
 	)
 	if err != nil {
-		return ResultRefreshToken{}, customerror.NewInternalErr("Failed to rotate tokens")
+		return ResultRefreshToken{}, customerror.New(2, 0, "Failed to rotate tokens")
 	}
 
 	return ResultRefreshToken{

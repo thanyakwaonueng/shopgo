@@ -49,7 +49,7 @@ func (h *GetUserByID) Handle(ctx context.Context, request RequestGetUserByID) (R
 
 	user, err := h.repoUser.Search(h.domainDb, condition, "")
 	if err != nil {
-		return ResultGetUserByID{}, customerror.NewInternalErr("Database error while retrieving user")
+		return ResultGetUserByID{}, customerror.New(3, 0, "Database error while retrieving user")
 	}
 
 	// 2. Check if exists

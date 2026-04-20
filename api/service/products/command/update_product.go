@@ -58,7 +58,7 @@ func (h *UpdateProduct) Handle(
 		"id": request.ID,
 	})
 	if err != nil {
-		return ResultUpdateProduct{}, customerror.NewInternalErr("Database error finding product")
+		return ResultUpdateProduct{}, customerror.New(5, 0, "Database error finding product")
 	}
 	if product == nil {
 		return ResultUpdateProduct{}, customerror.New(5, 1, "Product not found")
@@ -69,7 +69,7 @@ func (h *UpdateProduct) Handle(
 		"id": request.CategoryID,
 	}, "")
 	if err != nil || category == nil {
-		return ResultUpdateProduct{}, customerror.NewInternalErr("Target category does not exist")
+		return ResultUpdateProduct{}, customerror.New(5, 0, "Target category does not exist")
 	}
 
 	// 3. Update the entity fields
@@ -81,7 +81,7 @@ func (h *UpdateProduct) Handle(
 
 	// 4. Save changes using Repository
 	if err := h.repoProduct.Update(h.domainDb, product); err != nil {
-		return ResultUpdateProduct{}, customerror.NewInternalErr("Could not update product details")
+		return ResultUpdateProduct{}, customerror.New(5, 0, "Could not update product details")
 	}
 
 	// 5. Map back to Result DTO

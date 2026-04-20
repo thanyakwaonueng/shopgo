@@ -56,7 +56,7 @@ func (l *Login) Handle(
 
 	if err != nil {
 		l.logger.Error("Database error during login check", "error", err)
-		return ResultLogin{}, customerror.NewInternalErr("Database error")
+		return ResultLogin{}, customerror.New(2, 0, "Database error")
 	}
 
 	if existingUser == nil {
@@ -78,7 +78,7 @@ func (l *Login) Handle(
 	)
 	if err != nil {
 		l.logger.Error("Failed to generate login tokens", "error", err)
-		return ResultLogin{}, customerror.NewInternalErr("Token generation failed")
+		return ResultLogin{}, customerror.New(2, 0, "Token generation failed")
 	}
 
 	// 4. Build Result
