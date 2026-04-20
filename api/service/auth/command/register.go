@@ -73,7 +73,7 @@ func (r *Register) Handle(
 
 	if existingUser != nil {
 		// Requirement: Error if email exists
-		return ResultRegister{}, customerror.NewInternalErr("Email already registered")
+		return ResultRegister{}, customerror.New(2, 2, "Email already registered")
 	}
 
 	// 2. Hash Password

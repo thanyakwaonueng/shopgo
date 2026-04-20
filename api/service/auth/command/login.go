@@ -61,13 +61,13 @@ func (l *Login) Handle(
 
 	if existingUser == nil {
 		// Security Tip: Generic error for both email and password issues
-		return ResultLogin{}, customerror.NewInternalErr("Invalid email or password")
+		return ResultLogin{}, customerror.New(2, 1, "Invalid email or password")
 	}
 
 	// 2. Verify Password (Compare hash with plain text)
 	err = bcrypt.CompareHashAndPassword([]byte(existingUser.PasswordHash), []byte(request.Password))
 	if err != nil {
-		return ResultLogin{}, customerror.NewInternalErr("Invalid email or password")
+		return ResultLogin{}, customerror.New(2, 1, "Invalid email or password")
 	}
 
 	// 3. Generate Tokens
