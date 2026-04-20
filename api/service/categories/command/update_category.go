@@ -54,7 +54,7 @@ func (h *UpdateCategory) Handle(
 	}
 
 	if category == nil {
-		return ResultUpdateCategory{}, customerror.NewInternalErr("Category not found")
+		return ResultUpdateCategory{}, customerror.New(4, 1, "Category not found")
 	}
 
 	// 2. Update the entity fields
@@ -63,7 +63,7 @@ func (h *UpdateCategory) Handle(
 
 	// 3. Save changes using Update repository method
 	if err := h.repoCategory.Update(h.domainDb, category); err != nil {
-		return ResultUpdateCategory{}, customerror.NewInternalErr("Could not update category. Slug might already be in use.")
+		return ResultUpdateCategory{}, customerror.New(4, 2, "Could not update, category name or slug might already exists")
 	}
 
 	// 4. Map back to Result DTO

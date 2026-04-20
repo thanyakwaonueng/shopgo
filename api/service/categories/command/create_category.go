@@ -52,7 +52,7 @@ func (h *CreateCategory) Handle(
 	// 2. Insert into database using the repository
 	if err := h.repoCategory.Create(h.domainDb, newCategory); err != nil {
 		// Logged inside the repository already
-		return ResultCreateCategory{}, customerror.NewInternalErr("Could not create category. Slug might already exist.")
+		return ResultCreateCategory{}, customerror.New(4, 2, "Could not create, category name or slug might already exists ")
 	}
 
 	// 3. Map back to Result DTO

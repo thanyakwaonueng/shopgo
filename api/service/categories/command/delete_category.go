@@ -49,7 +49,7 @@ func (h *DeleteCategory) Handle(
 	}
 
 	if category == nil {
-		return false, customerror.NewInternalErr("Category not found")
+		return false, customerror.New(4, 1, "Category not found")
 	}
 
 	// 2. Efficiently check for linked products using Custom Repo
@@ -60,7 +60,7 @@ func (h *DeleteCategory) Handle(
 
 	if exists {
 		h.logger.Warn("Delete blocked: products linked", "category_id", request.ID)
-		return false, customerror.NewInternalErr("Cannot delete category: products are still linked to it")
+		return false, customerror.New(4, 3, "Cannot delete category with linkded products")
 	}
 
 	// 3. Perform the deletion

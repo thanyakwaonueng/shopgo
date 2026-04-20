@@ -44,7 +44,7 @@ func (h *GetCategories) Handle(
 	// Passing an empty map as condition to get everything
 	categories, err := h.repoCategory.List(h.domainDb, map[string]interface{}{}, "")
 	if err != nil {
-		return nil, customerror.NewInternalErr("Failed to fetch categories")
+		return nil, customerror.New(4, 1, "Failed to fetch categories")
 	}
 
 	// 2. Map entities to Result structs
