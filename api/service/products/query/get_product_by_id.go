@@ -65,7 +65,7 @@ func (h *GetProductByID) Handle(
 	}
 
 	if product == nil {
-		return ResultGetProductByID{}, customerror.NewInternalErr("Product not found")
+		return ResultGetProductByID{}, customerror.New(5, 1, "Product not found")
 	}
 
 	// 2. Map entity to Result struct

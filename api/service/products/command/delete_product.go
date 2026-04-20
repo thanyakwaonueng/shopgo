@@ -45,7 +45,7 @@ func (h *DeleteProduct) Handle(
 	}
 
 	if product == nil {
-		return false, customerror.NewInternalErr("Product not found")
+		return false, customerror.New(5, 1, "Product not found")
 	}
 
 	// 2. Perform the deletion using Repository

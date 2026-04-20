@@ -61,7 +61,7 @@ func (h *UpdateProduct) Handle(
 		return ResultUpdateProduct{}, customerror.NewInternalErr("Database error finding product")
 	}
 	if product == nil {
-		return ResultUpdateProduct{}, customerror.NewInternalErr("Product not found")
+		return ResultUpdateProduct{}, customerror.New(5, 1, "Product not found")
 	}
 
 	// 2. Check if the new Category exists using Repository
