@@ -1,14 +1,7 @@
-TODAY WORK: writing more unit test, continueing from .../shopgo/api/service/orders/command
+TODAY WORK: since I think these project is mostly sufficient now so I will try to do the frontend by my self using shopgo-frontend from mr.saza as example
 
-*note: some service is not purely in repository pattern such as register, order_cancel, (maybe a few more) since I still import database/entity and initiate database transaction for some action that I want it to be atomic, perhaps I must refactor it into using transaction manager interface or something, just noting here so I don't forget.
+NOTE: I know that .env should be commited as .env.example
 
-DISCLAIMER ==> I commit .ENV because this project was meant to be only for presentation purpose(I'm not going to do this in prod. I swear), also I plan it to be like the reviewer need to mostly only run build_docker.sh script just to setup&review, but its not done yet you still have to excute the sql yourself to set up the relations, I'll make a pre-seeding function to it later if I'm able to,
+NOTE: service code with db transaction is not in purely repository pattern yet(it is for most part but there exists transaction call in the service layer, hence I call it not pure-repository), this happen because I want some business logic to be atomic(either all passed or all roll backed)
 
-WARNING: by runing build_docker.sh will remove your postgresql volume(from my understanding) I do not know if the reviewer need it not to remove or not, but I contemporary need it to prevent conflict with previous build of other project.
-
-my personal note: query params for testing /products, {{base_url}}/products?page=1&limit=5, {{base_url}}/products?q=Go, {{base_url}}/products?category_id=1, {{base_url}}/products?q=Design&category_id=3&sort=price_desc, {{base_url}}/products?sort=newest, {{base_url}}/products?sort=price_asc
-
-future plan: implement few unit testings for each service, fix error code, fix swagger doc not generate, refactor of few(prolly 2-3) service to purely be repository pattern, clarify whether or not using validator at response is necessary.
-
-
-unit test: "If the code is literally just mapping a request to a database call, it's often skipped because the cost of maintaining the test is higher than the value the test provides." - mr.germini, perhaps this is the reason why some service not get unit tested in mr.saza example code, so for now I'll left out auth(to be fair there maybe few more that I should left out too but I written it anyway so for now left it be)
+NOTE: I left out unit test of login, register, getMe and refreshToken service for now since the code is literally just mapping a request to db with minimal(if any) business logic at the moment
