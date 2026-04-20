@@ -13,6 +13,7 @@ import (
     "github.com/thanyakwaonueng/shopgo/lib/environment"
     "github.com/thanyakwaonueng/shopgo/lib/jwt"
     "github.com/thanyakwaonueng/shopgo/lib/util"
+    "github.com/thanyakwaonueng/shopgo/lib/util/customerror"
 
 
 	"github.com/gofiber/fiber/v2"
@@ -70,8 +71,8 @@ func createFiberMiddlewareInstance(
 ) *FiberMiddleware {
 	allowCredential, err := strconv.ParseBool(environment.GetString(environment.AllowCredentialKey))
 	if err != nil {
-		//message := "Failed to set CORS config"
-		//logger.Error(message, customerror.LogPanicKey, err.Error())
+		message := "Failed to set CORS config"
+		logger.Error(message, customerror.LogPanicKey, err.Error())
 		os.Exit(1)
 	}
 
@@ -98,10 +99,9 @@ func (f *FiberMiddleware) Authenticated() fiber.Handler {
 		// 1. Get the token from the Header (Bearer <token>)
 		tokenStr, err := f.jwtManager.GetAccessTokenFromContext(c)
 		if err != nil {
-			f.logger.Error("Missing or invalid auth header")
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"message": "Authorization header is required",
-			})
+            customErr := customerror.New(1, 3, "Insufficient role(Missing or invalid auth header)")
+            f.logger.Error(customErr.Message)
+            return c.Status(fiber.StatusBadRequest).JSON(customErr)
 		}
 
 		// 2. Validate the signature and extract claims
@@ -110,15 +110,14 @@ func (f *FiberMiddleware) Authenticated() fiber.Handler {
 			f.logger.Error("JWT Validation failed", "error", err.Error())
 			
 			// Check if expired or just invalid
-			status := fiber.StatusUnauthorized
-			msg := "Invalid token"
 			if strings.Contains(err.Error(), "expired") {
-				msg = "Token has expired"
+                customErr := customerror.New(1, 2, "Token expired")
+                return c.Status(fiber.StatusBadRequest).JSON(customErr)
 			}
 
-			return c.Status(status).JSON(fiber.Map{
-				"message": msg,
-			})
+			//msg := "Missing or invalid token"
+            customErr := customerror.New(1, 1, "Missing or invalid token")
+            return c.Status(fiber.StatusBadRequest).JSON(customErr)
 		}
 
 		// 3. Store user info in Context (Locals)
@@ -142,16 +141,10 @@ func (f *FiberMiddleware) AdminOnly() fiber.Handler {
 		role := userData.Role
 
 		// 2. If it's not there or it's not "admin", block it
-		// Use StatusForbidden (403) because we know who they are,
-		// but they don't have permission.
 		if role != "admin" {
-			f.logger.Warn("Unauthorized access attempt",
-				"path", c.Path(),
-				"role", role,
-			)
-			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-				"message": "Access denied: Admin role required",
-			})
+            customErr := customerror.New(1, 3, "Insufficient role(Not admin!)")
+            f.logger.Error(customErr.Message)
+            return c.Status(fiber.StatusBadRequest).JSON(customErr)
 		}
 
 		// 3. User is an admin, let them through!
