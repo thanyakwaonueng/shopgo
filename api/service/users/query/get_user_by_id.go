@@ -54,7 +54,7 @@ func (h *GetUserByID) Handle(ctx context.Context, request RequestGetUserByID) (R
 
 	// 2. Check if exists
 	if user == nil {
-		return ResultGetUserByID{}, customerror.NewInternalErr("User not found")
+		return ResultGetUserByID{}, customerror.New(3, 1, "User not found")
 	}
 
 	// 3. Map entity to Result DTO

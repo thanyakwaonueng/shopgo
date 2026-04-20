@@ -34,13 +34,13 @@ func (h *UpdateUserRole) Handle(ctx context.Context, request RequestUpdateUserRo
     }
 
     if user == nil {
-        return false, customerror.NewInternalErr("User not found")
+        return false, customerror.New(3, 1, "User not found")
     }
 
 	user.Role = util.UserRole(request.Role)
 
 	if err := h.repoUser.Update(h.domainDb, user); err != nil {
-		return false, customerror.NewInternalErr("Failed to update user role")
+		return false, customerror.New(3, 2, "Failed to update user role")
 	}
 
 	return true, nil
